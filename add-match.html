@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Add Match - Ngongotahā AFC</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .admin-wrap { max-width: 820px; margin: 40px auto 60px; padding: 0 20px; }
+    .admin-wrap .section { margin-bottom: 25px; }
+
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block; margin-bottom: 7px;
+      color: var(--orange-light); font-size: 12px; font-weight: 800;
+      letter-spacing: 2px; text-transform: uppercase;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 13px 14px;
+      color: #fff; font-family: inherit; font-size: 16px;
+      background: #0b0b0b;
+      border: 1px solid rgba(255,145,77,0.35); border-radius: 8px;
+    }
+    .field textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: 2px solid var(--orange-light); outline-offset: 1px;
+    }
+    .field small { display: block; margin-top: 6px; color: var(--text-muted); font-size: 13px; line-height: 1.5; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .score-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: end; }
+    .score-row .dash { padding-bottom: 14px; color: var(--orange-light); font-size: 22px; font-weight: bold; }
+
+    .check { display: flex; gap: 10px; align-items: center; margin: 4px 0 18px; color: #ddd; font-size: 14px; }
+    .check input { width: 18px; height: 18px; }
+
+    .admin-btn {
+      display: inline-block; padding: 14px 26px; cursor: pointer;
+      color: #fff; font-family: inherit; font-size: 15px; font-weight: bold;
+      letter-spacing: 1px; text-transform: uppercase;
+      background: linear-gradient(90deg, var(--orange-light), var(--orange));
+      border: none; border-radius: 8px;
+    }
+    .admin-btn:disabled { opacity: 0.55; cursor: wait; }
+    .admin-btn.ghost {
+      background: transparent; border: 1px solid rgba(255,145,77,0.5); color: var(--orange-light);
+    }
+
+    .status { margin-top: 16px; padding: 12px 14px; border-radius: 8px; font-size: 15px; line-height: 1.5; display: none; }
+    .status.show { display: block; }
+    .status.ok  { background: rgba(60,180,90,0.15); border: 1px solid rgba(60,180,90,0.5); }
+    .status.err { background: rgba(255,60,40,0.15); border: 1px solid rgba(255,90,70,0.6); }
+    .status.info { background: rgba(254,67,0,0.12); border: 1px solid rgba(255,145,77,0.4); }
+
+    .preview {
+      margin: 0 0 18px; padding: 14px; overflow-x: auto;
+      color: #ddd; font-size: 13px; line-height: 1.5;
+      background: #050505; border: 1px dashed rgba(255,145,77,0.35); border-radius: 8px;
+      white-space: pre-wrap;
+    }
+
+    .match-list { list-style: none; margin: 0; padding: 0; }
+    .match-list li {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 15px;
+    }
+    .match-list .meta { color: var(--text-muted); font-size: 13px; }
+    .match-list button {
+      padding: 8px 12px; cursor: pointer; color: #ff9a8a; font-family: inherit; font-size: 12px;
+      background: transparent; border: 1px solid rgba(255,90,70,0.5); border-radius: 6px;
+    }
+
+    .steps { color: #ddd; font-size: 15px; line-height: 1.7; padding-left: 20px; }
+    .steps code { color: var(--orange-soft); }
+
+    [hidden] { display: none !important; }
+
+    @media (max-width: 600px) {
+      .row { grid-template-columns: 1fr; }
+      .score-row { grid-template-columns: 1fr auto 1fr; gap: 8px; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="admin-wrap">
+
+  <!-- =====================================================
+       LOCK SCREEN
+       ===================================================== -->
+  <section class="section" id="lockSection">
+    <span class="home-section-label">Club Admin</span>
+    <h2>Unlock</h2>
+    <p>
+      Paste your GitHub access token to add match results. The token is only
+      ever stored on this device, never in the website code, so nobody else
+      can use this page.
+    </p>
+
+    <div class="field">
+      <label for="tokenInput">GitHub access token</label>
+      <input id="tokenInput" type="password" autocomplete="off" placeholder="github_pat_...">
+    </div>
+
+    <label class="check">
+      <input type="checkbox" id="rememberToken" checked>
+      Remember on this device
+    </label>
+
+    <button class="admin-btn" id="unlockBtn" type="button">Unlock</button>
+    <div class="status" id="lockStatus" role="status"></div>
+
+    <details style="margin-top:24px;">
+      <summary style="cursor:pointer;color:var(--orange-light);font-weight:bold;">How to get a token (one-time setup)</summary>
+      <ol class="steps">
+        <li>On GitHub go to <strong>Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token</strong>.</li>
+        <li>Name it "Ngongotahā add-match" and set an expiry (e.g. 1 year).</li>
+        <li>Under <strong>Repository access</strong> choose <strong>Only select repositories</strong> and pick your data repo only.</li>
+        <li>Under <strong>Permissions → Repository permissions</strong> set <strong>Contents</strong> to <strong>Read and write</strong>.</li>
+        <li>Generate, copy the token and paste it above.</li>
+      </ol>
+      <p style="font-size:14px;color:var(--text-muted);">
+        The token can only edit that one repo, so even if it leaked it could
+        not touch anything else on your account. You can revoke it any time.
+      </p>
+    </details>
+  </section>
+
+  <!-- =====================================================
+       ADD MATCH
+       ===================================================== -->
+  <div id="appSection" hidden>
+
+    <section class="section">
+      <span class="home-section-label">Match Centre</span>
+      <h2>Add A Match</h2>
+
+      <div class="row">
+        <div class="field">
+          <label for="mDate">Date</label>
+          <input id="mDate" type="date">
+        </div>
+        <div class="field">
+          <label for="mVenue">Home or away</label>
+          <select id="mVenue">
+            <option value="Home">Home</option>
+            <option value="Away">Away</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="mOpponent">Opponent</label>
+        <input id="mOpponent" type="text" placeholder="e.g. Taupo AFC" autocomplete="off">
+      </div>
+
+      <div class="score-row">
+        <div class="field">
+          <label for="mFor">Ngongotahā goals</label>
+          <input id="mFor" type="number" min="0" max="50" inputmode="numeric" value="0">
+        </div>
+        <div class="dash">–</div>
+        <div class="field">
+          <label for="mAgainst">Opponent goals</label>
+          <input id="mAgainst" type="number" min="0" max="50" inputmode="numeric" value="0">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="mScorers">Our scorers</label>
+        <textarea id="mScorers" placeholder="Arno Greyling x2&#10;Olly Atkinson"></textarea>
+        <small>One player per line. Add <strong>x2</strong> or <strong>x3</strong> after the name for multiple goals. Leave blank for a 0 goal game.</small>
+      </div>
+
+      <label class="label" style="display:block;margin-bottom:8px;color:var(--orange-light);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Preview</label>
+      <pre class="preview" id="preview"></pre>
+
+      <button class="admin-btn" id="saveBtn" type="button">Save match</button>
+      <button class="admin-btn ghost" id="lockBtn" type="button" style="margin-left:8px;">Lock</button>
+
+      <div class="status" id="saveStatus" role="status"></div>
+    </section>
+
+    <section class="section">
+      <span class="home-section-label">Recent</span>
+      <h2>Saved Matches</h2>
+      <p id="listEmpty">Loading…</p>
+      <ul class="match-list" id="matchList"></ul>
+    </section>
+
+  </div>
+
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   SETTINGS: change these four to match your data repo
+   ========================================================= */
+const CONFIG = {
+  owner:  "YOUR-GITHUB-USERNAME",
+  repo:   "ngongotaha-data",
+  path:   "matches.json",
+  branch: "main"
+};
+
+const TOKEN_KEY = "ngongotaha_admin_token";
+let token = "";
+
+const $ = function (id) { return document.getElementById(id); };
+
+
+/* ---------- Small helpers ---------- */
+
+function showStatus(el, type, text) {
+  el.className = "status show " + type;
+  el.textContent = text;
+}
+
+function clearStatus(el) {
+  el.className = "status";
+  el.textContent = "";
+}
+
+function todayLocal() {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return d.getFullYear() + "-" + m + "-" + day;
+}
+
+function toBase64(text) {
+  const bytes = new TextEncoder().encode(text);
+  let bin = "";
+  bytes.forEach(function (b) { bin += String.fromCharCode(b); });
+  return btoa(bin);
+}
+
+function fromBase64(b64) {
+  const bin = atob(b64.replace(/\s/g, ""));
+  const bytes = Uint8Array.from(bin, function (c) { return c.charCodeAt(0); });
+  return new TextDecoder().decode(bytes);
+}
+
+function storageGet() {
+  try { return localStorage.getItem(TOKEN_KEY) || ""; } catch (e) { return ""; }
+}
+function storageSet(value) {
+  try { localStorage.setItem(TOKEN_KEY, value); } catch (e) { /* ignore */ }
+}
+function storageClear() {
+  try { localStorage.removeItem(TOKEN_KEY); } catch (e) { /* ignore */ }
+}
+
+
+/* ---------- GitHub API ---------- */
+
+function api(url, options) {
+  options = options || {};
+  options.headers = Object.assign({
+    "Accept": "application/vnd.github+json",
+    "Authorization": "Bearer " + token,
+    "X-GitHub-Api-Version": "2022-11-28"
+  }, options.headers || {});
+  options.cache = "no-store";
+  return fetch(url, options);
+}
+
+const REPO_URL = function () {
+  return "https://api.github.com/repos/" + CONFIG.owner + "/" + CONFIG.repo;
+};
+
+const FILE_URL = function () {
+  return REPO_URL() + "/contents/" + CONFIG.path;
+};
+
+/* Returns { data, sha }. If the file does not exist yet, starts empty. */
+async function getFile() {
+  const res = await api(FILE_URL() + "?ref=" + encodeURIComponent(CONFIG.branch));
+
+  if (res.status === 404) {
+    return { data: { matches: [] }, sha: null };
+  }
+  if (!res.ok) {
+    throw new Error("GitHub error " + res.status + " while reading " + CONFIG.path);
+  }
+
+  const json = await res.json();
+  let data;
+
+  try {
+    data = JSON.parse(fromBase64(json.content));
+  } catch (e) {
+    throw new Error(CONFIG.path + " is not valid JSON. Fix it on GitHub first.");
+  }
+
+  if (!data || !Array.isArray(data.matches)) {
+    data = { matches: [] };
+  }
+
+  return { data: data, sha: json.sha };
+}
+
+async function putFile(data, sha, message) {
+  const body = {
+    message: message,
+    content: toBase64(JSON.stringify(data, null, 2) + "\n"),
+    branch: CONFIG.branch
+  };
+
+  if (sha) { body.sha = sha; }
+
+  const res = await api(FILE_URL(), {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+
+  if (res.status === 409 || res.status === 422) {
+    throw new Error("The file changed while you were saving. Press Save again.");
+  }
+  if (res.status === 401 || res.status === 403) {
+    throw new Error("Your token was rejected. Check it has Contents: Read and write.");
+  }
+  if (!res.ok) {
+    throw new Error("GitHub error " + res.status + " while saving.");
+  }
+}
+
+
+/* ---------- Unlock / lock ---------- */
+
+async function tryUnlock(candidate, remember) {
+  token = candidate.trim();
+
+  if (!token) {
+    showStatus($("lockStatus"), "err", "Paste your token first.");
+    return false;
+  }
+
+  $("unlockBtn").disabled = true;
+  showStatus($("lockStatus"), "info", "Checking token…");
+
+  try {
+    const res = await api(REPO_URL());
+
+    if (res.status === 401) {
+      throw new Error("GitHub did not accept that token.");
+    }
+    if (res.status === 404) {
+      throw new Error("Repo not found, or the token does not have access to it. Check the settings at the top of this file and the token's repository access.");
+    }
+    if (!res.ok) {
+      throw new Error("GitHub error " + res.status + ".");
+    }
+
+    const repo = await res.json();
+
+    if (repo.permissions && repo.permissions.push === false) {
+      throw new Error("Token can read but not write. Set Contents to Read and write.");
+    }
+
+    if (remember) { storageSet(token); } else { storageClear(); }
+
+    $("lockSection").hidden = true;
+    $("appSection").hidden = false;
+    clearStatus($("lockStatus"));
+    $("tokenInput").value = "";
+
+    await refreshList();
+    return true;
+
+  } catch (err) {
+    token = "";
+    showStatus($("lockStatus"), "err", err.message);
+    return false;
+
+  } finally {
+    $("unlockBtn").disabled = false;
+  }
+}
+
+function lock() {
+  token = "";
+  storageClear();
+  $("appSection").hidden = true;
+  $("lockSection").hidden = false;
+  clearStatus($("saveStatus"));
+}
+
+
+/* ---------- Form ---------- */
+
+function parseScorers(text) {
+  const result = [];
+
+  text.split(/\r?\n/).forEach(function (line) {
+    line = line.replace(/\s+/g, " ").trim();
+    if (!line) { return; }
+
+    let name = line;
+    let count = 1;
+
+    const m = line.match(/^(.+?)\s*(?:[x×]\s*(\d+)|\((\d+)\))$/i);
+
+    if (m) {
+      name = m[1].trim();
+      count = parseInt(m[2] || m[3], 10);
+    }
+
+    for (let i = 0; i < Math.min(count, 20); i++) {
+      result.push(name);
+    }
+  });
+
+  return result;
+}
+
+function buildMatch() {
+  return {
+    id: String(Date.now()),
+    date: $("mDate").value,
+    opponent: $("mOpponent").value.replace(/\s+/g, " ").trim(),
+    venue: $("mVenue").value,
+    for: parseInt($("mFor").value, 10),
+    against: parseInt($("mAgainst").value, 10),
+    scorers: parseScorers($("mScorers").value)
+  };
+}
+
+function updatePreview() {
+  const m = buildMatch();
+  $("preview").textContent = JSON.stringify(m, null, 2);
+}
+
+async function saveMatch() {
+  const status = $("saveStatus");
+  const match = buildMatch();
+
+  if (!match.date) { return showStatus(status, "err", "Pick a date."); }
+  if (!match.opponent) { return showStatus(status, "err", "Enter the opponent."); }
+  if (!Number.isInteger(match.for) || !Number.isInteger(match.against) ||
+      match.for < 0 || match.against < 0) {
+    return showStatus(status, "err", "Enter both scores as whole numbers.");
+  }
+
+  if (match.scorers.length !== match.for) {
+    const go = confirm(
+      "You entered " + match.scorers.length + " scorer(s) but a score of " +
+      match.for + ". Save anyway? (Fine for own goals.)"
+    );
+    if (!go) { return; }
+  }
+
+  $("saveBtn").disabled = true;
+  showStatus(status, "info", "Saving to GitHub…");
+
+  try {
+    const file = await getFile();
+
+    const duplicate = file.data.matches.some(function (m) {
+      return m.date === match.date &&
+             m.opponent.toLowerCase() === match.opponent.toLowerCase();
+    });
+
+    if (duplicate && !confirm("A match on this date against this opponent already exists. Add it again?")) {
+      showStatus(status, "info", "Cancelled.");
+      return;
+    }
+
+    file.data.matches.push(match);
+    file.data.matches.sort(function (a, b) { return b.date.localeCompare(a.date); });
+    file.data.updated = new Date().toISOString();
+
+    await putFile(file.data, file.sha, "Add match vs " + match.opponent + " (" + match.date + ")");
+
+    showStatus(status, "ok", "Saved. The website will show it within a minute or two.");
+
+    $("mOpponent").value = "";
+    $("mFor").value = "0";
+    $("mAgainst").value = "0";
+    $("mScorers").value = "";
+    updatePreview();
+
+    await refreshList();
+
+  } catch (err) {
+    showStatus(status, "err", err.message);
+
+  } finally {
+    $("saveBtn").disabled = false;
+  }
+}
+
+
+/* ---------- Saved matches list ---------- */
+
+async function refreshList() {
+  const list = $("matchList");
+  const empty = $("listEmpty");
+
+  list.textContent = "";
+
+  try {
+    const file = await getFile();
+    const matches = file.data.matches.slice(0, 10);
+
+    empty.hidden = matches.length > 0;
+    empty.textContent = "No matches saved yet.";
+
+    matches.forEach(function (m) {
+      const li = document.createElement("li");
+
+      const info = document.createElement("div");
+      const title = document.createElement("div");
+      title.textContent = m.date + "  " + (m.venue === "Away" ? "@ " : "v ") +
+        m.opponent + "  " + m.for + "–" + m.against;
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = (m.scorers && m.scorers.length) ? m.scorers.join(", ") : "No scorers";
+      info.appendChild(title);
+      info.appendChild(meta);
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = "Remove";
+      btn.addEventListener("click", function () { removeMatch(m); });
+
+      li.appendChild(info);
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+
+  } catch (err) {
+    empty.hidden = false;
+    empty.textContent = err.message;
+  }
+}
+
+async function removeMatch(match) {
+  if (!confirm("Remove " + match.opponent + " (" + match.date + ")?")) { return; }
+
+  const status = $("saveStatus");
+  showStatus(status, "info", "Removing…");
+
+  try {
+    const file = await getFile();
+
+    file.data.matches = file.data.matches.filter(function (m) {
+      return match.id ? m.id !== match.id
+                      : !(m.date === match.date && m.opponent === match.opponent);
+    });
+    file.data.updated = new Date().toISOString();
+
+    await putFile(file.data, file.sha, "Remove match vs " + match.opponent + " (" + match.date + ")");
+
+    showStatus(status, "ok", "Removed.");
+    await refreshList();
+
+  } catch (err) {
+    showStatus(status, "err", err.message);
+  }
+}
+
+
+/* ---------- Start ---------- */
+
+$("mDate").value = todayLocal();
+
+["mDate", "mVenue", "mOpponent", "mFor", "mAgainst", "mScorers"].forEach(function (id) {
+  $(id).addEventListener("input", updatePreview);
+});
+
+$("unlockBtn").addEventListener("click", function () {
+  tryUnlock($("tokenInput").value, $("rememberToken").checked);
+});
+
+$("tokenInput").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") {
+    tryUnlock($("tokenInput").value, $("rememberToken").checked);
+  }
+});
+
+$("saveBtn").addEventListener("click", saveMatch);
+$("lockBtn").addEventListener("click", lock);
+
+updatePreview();
+
+/* Auto-unlock if a token was remembered on this device. */
+const savedToken = storageGet();
+if (savedToken) {
+  tryUnlock(savedToken, true);
+}
+</script>
+</body>
+</html>
