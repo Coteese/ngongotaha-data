@@ -1,16 +1,21 @@
 {
   "season": 2026,
   "baseline": {
-    "Arno Greyling": 5
+    "Arno Greyling": 5,
+    "Olly Atkinson": 3
   },
   "matches": [],
   "scorers": [
     {
       "name": "Arno Greyling",
       "goals": 5
+    },
+    {
+      "name": "Olly Atkinson",
+      "goals": 3
     }
   ],
   "matchesPlayed": 0,
-  "totalGoals": 5,
-  "updated": "2026-10-25T20:04:51.919Z"
+  "totalGoals": 8,
+  "updated": "2026-10-25T20:05:09.853Z"
 }
