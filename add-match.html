@@ -5,9 +5,118 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <title>Add Match - Ngongotahā AFC</title>
-  <link rel="stylesheet" href="style.css">
 
   <style>
+    /* =========================================================
+       CLUB STYLES (copied from style.css so this page is
+       completely self-contained: no other files needed)
+       ========================================================= */
+
+    :root {
+      --orange-light:  #ff914d;
+      --orange:        #fe4300;
+      --orange-bright: #ff6a00;
+      --orange-soft:   #ffb07a;
+      --black:         #050505;
+      --dark:          #0b0b0b;
+      --dark-panel:    #111111;
+      --text:          #eeeeee;
+      --text-muted:    #bbbbbb;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: white;
+      background:
+        radial-gradient(ellipse at top, rgba(254,67,0,0.12), transparent 55%),
+        linear-gradient(rgba(0,0,0,0.82), rgba(0,0,0,0.92)),
+        #0b0b0b;
+      background-attachment: fixed;
+    }
+
+    /* Orange top bar, same moving gradient as the site navbar */
+    .admin-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 64px;
+      padding: 10px 20px;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: linear-gradient(110deg, var(--orange-light), var(--orange), var(--orange-bright), var(--orange));
+      background-size: 300% 300%;
+      animation: navbarGlow 15s ease infinite;
+      box-shadow: 0 4px 25px rgba(0,0,0,0.55), 0 0 25px rgba(254,67,0,0.25);
+    }
+
+    @keyframes navbarGlow {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .section {
+      position: relative;
+      margin-bottom: 35px;
+      padding: 35px;
+      background: linear-gradient(135deg, rgba(10,10,10,0.92), rgba(22,14,10,0.90));
+      border: 1px solid rgba(255,145,77,0.18);
+      border-radius: 18px;
+      box-shadow: 0 15px 45px rgba(0,0,0,0.45);
+    }
+
+    .section h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 30px;
+      color: var(--orange-light);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .section p {
+      margin-bottom: 16px;
+      color: #eeeeee;
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    .home-section-label {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding-left: 10px;
+      color: var(--orange-light);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      border-left: 3px solid var(--orange);
+    }
+
+    @media (max-width: 900px) { .section { padding: 25px 20px; } }
+    @media (max-width: 600px) {
+      .section h2 { font-size: 24px; }
+      .section p { font-size: 15px; }
+      body { background-attachment: scroll; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .admin-bar { animation: none; }
+    }
+
+    /* =========================================================
+       ADMIN PAGE
+       ========================================================= */
+
     .admin-wrap { max-width: 820px; margin: 40px auto 60px; padding: 0 20px; }
     .admin-wrap .section { margin-bottom: 25px; }
 
@@ -85,6 +194,8 @@
 </head>
 
 <body>
+<div class="admin-bar">Ngongotahā AFC · Club Admin</div>
+
 <div class="admin-wrap">
 
   <!-- =====================================================
@@ -172,6 +283,8 @@
         <label for="mScorers">Our scorers</label>
         <textarea id="mScorers" placeholder="Arno Greyling x2&#10;Olly Atkinson"></textarea>
         <small>One player per line. Add <strong>x2</strong> or <strong>x3</strong> after the name for multiple goals. Leave blank for a 0 goal game.</small>
+        <div id="knownPlayers" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;"></div>
+        <small id="knownHint" hidden>Tap a name to add one goal for that player. This keeps spellings matching so a player never gets split into two.</small>
       </div>
 
       <label class="label" style="display:block;margin-bottom:8px;color:var(--orange-light);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Preview</label>
@@ -181,6 +294,35 @@
       <button class="admin-btn ghost" id="lockBtn" type="button" style="margin-left:8px;">Lock</button>
 
       <div class="status" id="saveStatus" role="status"></div>
+    </section>
+
+    <section class="section">
+      <span class="home-section-label">Season <span id="seasonLabel"></span></span>
+      <h2>Top Scorers</h2>
+      <p id="totalsSummary">Loading…</p>
+      <ol class="match-list" id="totalsList" style="list-style:decimal inside;"></ol>
+
+      <details style="margin-top:22px;">
+        <summary style="cursor:pointer;color:var(--orange-light);font-weight:bold;">Starting goals / corrections</summary>
+        <p style="font-size:14px;color:var(--text-muted);line-height:1.6;">
+          Use this for goals scored <strong>before</strong> you started entering matches here
+          (e.g. Arno Greyling 5). These are added on top of the matches you save.
+          Do not also enter those same games as matches or they will count twice.
+          Enter the starting goals, not the new total. Set 0 to remove a player's starting goals.
+        </p>
+        <div class="row">
+          <div class="field">
+            <label for="bName">Player</label>
+            <input id="bName" type="text" autocomplete="off" placeholder="e.g. Arno Greyling">
+          </div>
+          <div class="field">
+            <label for="bGoals">Starting goals</label>
+            <input id="bGoals" type="number" min="0" max="200" inputmode="numeric" value="0">
+          </div>
+        </div>
+        <button class="admin-btn ghost" id="baselineBtn" type="button">Set starting goals</button>
+        <div class="status" id="baselineStatus" role="status"></div>
+      </details>
     </section>
 
     <section class="section">
@@ -198,12 +340,13 @@
 "use strict";
 
 /* =========================================================
-   SETTINGS: change these four to match your data repo
+   SETTINGS: change these to match your data repo
    ========================================================= */
 const CONFIG = {
-  owner:  "Coteese",
+  owner:  "YOUR-GITHUB-USERNAME",
   repo:   "ngongotaha-data",
-  path:   "matches.json",
+  season: 2026,                    // change each year
+  path:   "season-2026.json",      // one file per season (keep in step with season)
   branch: "main"
 };
 
@@ -256,6 +399,70 @@ function storageClear() {
 }
 
 
+/* ---------- Season data shape ----------
+   {
+     season, updated, matchesPlayed, totalGoals,
+     scorers:  [ { name, goals } ... ]   <- ready-made table, highest first
+     baseline: { "Name": goals }         <- goals scored before matches were entered
+     matches:  [ ... ]                   <- every match
+   }
+------------------------------------------ */
+
+function newData() {
+  return { season: CONFIG.season, baseline: {}, matches: [] };
+}
+
+/* Rebuilds the season scorers table from baseline + matches. */
+function finalise(data) {
+  data.season = CONFIG.season;
+
+  if (!data.baseline || typeof data.baseline !== "object" || Array.isArray(data.baseline)) {
+    data.baseline = {};
+  }
+  if (!Array.isArray(data.matches)) {
+    data.matches = [];
+  }
+
+  const canon = {};   // lower-case name -> the spelling first used
+  const tally = {};
+
+  function add(name, n) {
+    const key = String(name).toLowerCase();
+    if (!canon[key]) { canon[key] = String(name); }
+    tally[canon[key]] = (tally[canon[key]] || 0) + n;
+  }
+
+  Object.keys(data.baseline).forEach(function (name) {
+    add(name, Number(data.baseline[name]) || 0);
+  });
+
+  data.matches.forEach(function (m) {
+    (m.scorers || []).forEach(function (name) { add(name, 1); });
+  });
+
+  data.scorers = Object.keys(tally)
+    .filter(function (n) { return tally[n] > 0; })
+    .map(function (n) { return { name: n, goals: tally[n] }; })
+    .sort(function (a, b) { return b.goals - a.goals || a.name.localeCompare(b.name); });
+
+  data.matchesPlayed = data.matches.length;
+  data.totalGoals = data.scorers.reduce(function (sum, p) { return sum + p.goals; }, 0);
+
+  return data;
+}
+
+function canonName(data, name) {
+  const lower = name.toLowerCase();
+  const hit = (data.scorers || []).filter(function (p) { return p.name.toLowerCase() === lower; })[0];
+  if (hit) { return hit.name; }
+  const keys = Object.keys(data.baseline || {});
+  for (let i = 0; i < keys.length; i++) {
+    if (keys[i].toLowerCase() === lower) { return keys[i]; }
+  }
+  return name;
+}
+
+
 /* ---------- GitHub API ---------- */
 
 function api(url, options) {
@@ -282,7 +489,7 @@ async function getFile() {
   const res = await api(FILE_URL() + "?ref=" + encodeURIComponent(CONFIG.branch));
 
   if (res.status === 404) {
-    return { data: { matches: [] }, sha: null };
+    return { data: finalise(newData()), sha: null };
   }
   if (!res.ok) {
     throw new Error("GitHub error " + res.status + " while reading " + CONFIG.path);
@@ -297,14 +504,17 @@ async function getFile() {
     throw new Error(CONFIG.path + " is not valid JSON. Fix it on GitHub first.");
   }
 
-  if (!data || !Array.isArray(data.matches)) {
-    data = { matches: [] };
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    data = newData();
   }
 
-  return { data: data, sha: json.sha };
+  return { data: finalise(data), sha: json.sha };
 }
 
 async function putFile(data, sha, message) {
+  data.updated = new Date().toISOString();
+  finalise(data);
+
   const body = {
     message: message,
     content: toBase64(JSON.stringify(data, null, 2) + "\n"),
@@ -473,7 +683,6 @@ async function saveMatch() {
 
     file.data.matches.push(match);
     file.data.matches.sort(function (a, b) { return b.date.localeCompare(a.date); });
-    file.data.updated = new Date().toISOString();
 
     await putFile(file.data, file.sha, "Add match vs " + match.opponent + " (" + match.date + ")");
 
@@ -508,6 +717,9 @@ async function refreshList() {
     const file = await getFile();
     const matches = file.data.matches.slice(0, 10);
 
+    renderTotals(file.data);
+    renderChips(file.data);
+
     empty.hidden = matches.length > 0;
     empty.textContent = "No matches saved yet.";
 
@@ -540,6 +752,88 @@ async function refreshList() {
   }
 }
 
+function renderTotals(data) {
+  const list = $("totalsList");
+  list.textContent = "";
+  $("seasonLabel").textContent = data.season;
+
+  $("totalsSummary").textContent = data.scorers.length
+    ? data.totalGoals + " goals from " + data.scorers.length + " scorers, " +
+      data.matchesPlayed + " match(es) entered."
+    : "No scorers yet.";
+
+  data.scorers.forEach(function (p) {
+    const li = document.createElement("li");
+    li.style.display = "list-item";
+    li.textContent = p.name + " , " + p.goals + (p.goals === 1 ? " goal" : " goals");
+    list.appendChild(li);
+  });
+}
+
+function renderChips(data) {
+  const box = $("knownPlayers");
+  box.textContent = "";
+  $("knownHint").hidden = data.scorers.length === 0;
+
+  data.scorers.forEach(function (p) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "admin-btn ghost";
+    chip.style.padding = "7px 12px";
+    chip.style.fontSize = "13px";
+    chip.style.letterSpacing = "0";
+    chip.style.textTransform = "none";
+    chip.textContent = p.name;
+
+    chip.addEventListener("click", function () {
+      const ta = $("mScorers");
+      if (ta.value && !/\n$/.test(ta.value)) { ta.value += "\n"; }
+      ta.value += p.name + "\n";
+      updatePreview();
+    });
+
+    box.appendChild(chip);
+  });
+}
+
+async function setBaseline() {
+  const status = $("baselineStatus");
+  const rawName = $("bName").value.replace(/\s+/g, " ").trim();
+  const goals = parseInt($("bGoals").value, 10);
+
+  if (!rawName) { return showStatus(status, "err", "Enter the player's name."); }
+  if (!Number.isInteger(goals) || goals < 0) {
+    return showStatus(status, "err", "Enter starting goals as a whole number.");
+  }
+
+  $("baselineBtn").disabled = true;
+  showStatus(status, "info", "Saving…");
+
+  try {
+    const file = await getFile();
+    const name = canonName(file.data, rawName);
+
+    Object.keys(file.data.baseline).forEach(function (k) {
+      if (k.toLowerCase() === name.toLowerCase()) { delete file.data.baseline[k]; }
+    });
+
+    if (goals > 0) { file.data.baseline[name] = goals; }
+
+    await putFile(file.data, file.sha, "Set starting goals: " + name + " = " + goals);
+
+    showStatus(status, "ok", "Saved.");
+    $("bName").value = "";
+    $("bGoals").value = "0";
+    await refreshList();
+
+  } catch (err) {
+    showStatus(status, "err", err.message);
+
+  } finally {
+    $("baselineBtn").disabled = false;
+  }
+}
+
 async function removeMatch(match) {
   if (!confirm("Remove " + match.opponent + " (" + match.date + ")?")) { return; }
 
@@ -553,7 +847,6 @@ async function removeMatch(match) {
       return match.id ? m.id !== match.id
                       : !(m.date === match.date && m.opponent === match.opponent);
     });
-    file.data.updated = new Date().toISOString();
 
     await putFile(file.data, file.sha, "Remove match vs " + match.opponent + " (" + match.date + ")");
 
@@ -586,6 +879,7 @@ $("tokenInput").addEventListener("keydown", function (e) {
 
 $("saveBtn").addEventListener("click", saveMatch);
 $("lockBtn").addEventListener("click", lock);
+$("baselineBtn").addEventListener("click", setBaseline);
 
 updatePreview();
 
