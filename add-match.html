@@ -4,28 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>Add Match - Ngongotahā AFC</title>
+  <title>Club Admin - Ngongotahā AFC</title>
 
   <style>
-    /* =========================================================
-       CLUB STYLES (copied from style.css so this page is
-       completely self-contained: no other files needed)
-       ========================================================= */
-
     :root {
       --orange-light:  #ff914d;
       --orange:        #fe4300;
       --orange-bright: #ff6a00;
       --orange-soft:   #ffb07a;
-      --black:         #050505;
-      --dark:          #0b0b0b;
-      --dark-panel:    #111111;
-      --text:          #eeeeee;
       --text-muted:    #bbbbbb;
     }
 
     * { box-sizing: border-box; }
-
     html { scroll-behavior: smooth; }
 
     body {
@@ -40,24 +30,16 @@
       background-attachment: fixed;
     }
 
-    /* Orange top bar, same moving gradient as the site navbar */
     .admin-bar {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 64px;
-      padding: 10px 20px;
-      color: #ffffff;
-      font-size: 15px;
-      font-weight: bold;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 64px; padding: 10px 20px;
+      color: #fff; font-size: 15px; font-weight: bold;
+      letter-spacing: 2px; text-transform: uppercase;
       background: linear-gradient(110deg, var(--orange-light), var(--orange), var(--orange-bright), var(--orange));
       background-size: 300% 300%;
       animation: navbarGlow 15s ease infinite;
       box-shadow: 0 4px 25px rgba(0,0,0,0.55), 0 0 25px rgba(254,67,0,0.25);
     }
-
     @keyframes navbarGlow {
       0%   { background-position: 0% 50%; }
       50%  { background-position: 100% 50%; }
@@ -65,40 +47,22 @@
     }
 
     .section {
-      position: relative;
-      margin-bottom: 35px;
-      padding: 35px;
+      position: relative; margin-bottom: 35px; padding: 35px;
       background: linear-gradient(135deg, rgba(10,10,10,0.92), rgba(22,14,10,0.90));
       border: 1px solid rgba(255,145,77,0.18);
       border-radius: 18px;
       box-shadow: 0 15px 45px rgba(0,0,0,0.45);
     }
-
     .section h2 {
-      margin-top: 0;
-      margin-bottom: 20px;
-      font-size: 30px;
-      color: var(--orange-light);
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      margin: 0 0 20px; font-size: 30px; color: var(--orange-light);
+      text-transform: uppercase; letter-spacing: 1px;
     }
-
-    .section p {
-      margin-bottom: 16px;
-      color: #eeeeee;
-      font-size: 16px;
-      line-height: 1.8;
-    }
+    .section p { margin-bottom: 16px; color: #eee; font-size: 16px; line-height: 1.8; }
 
     .home-section-label {
-      display: inline-block;
-      margin-bottom: 12px;
-      padding-left: 10px;
-      color: var(--orange-light);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 3px;
-      text-transform: uppercase;
+      display: inline-block; margin-bottom: 12px; padding-left: 10px;
+      color: var(--orange-light); font-size: 11px; font-weight: 800;
+      letter-spacing: 3px; text-transform: uppercase;
       border-left: 3px solid var(--orange);
     }
 
@@ -108,17 +72,19 @@
       .section p { font-size: 15px; }
       body { background-attachment: scroll; }
     }
+    @media (prefers-reduced-motion: reduce) { .admin-bar { animation: none; } }
 
-    @media (prefers-reduced-motion: reduce) {
-      .admin-bar { animation: none; }
-    }
-
-    /* =========================================================
-       ADMIN PAGE
-       ========================================================= */
+    /* ---------- Admin page ---------- */
 
     .admin-wrap { max-width: 820px; margin: 40px auto 60px; padding: 0 20px; }
     .admin-wrap .section { margin-bottom: 25px; }
+
+    .tabs { display: flex; gap: 10px; margin-bottom: 25px; }
+    .tabs .admin-btn { flex: 1; padding: 14px 10px; }
+    .admin-btn.inactive {
+      background: transparent; color: var(--orange-light);
+      border: 1px solid rgba(255,145,77,0.5);
+    }
 
     .field { margin-bottom: 18px; }
     .field label {
@@ -159,8 +125,8 @@
 
     .status { margin-top: 16px; padding: 12px 14px; border-radius: 8px; font-size: 15px; line-height: 1.5; display: none; }
     .status.show { display: block; }
-    .status.ok  { background: rgba(60,180,90,0.15); border: 1px solid rgba(60,180,90,0.5); }
-    .status.err { background: rgba(255,60,40,0.15); border: 1px solid rgba(255,90,70,0.6); }
+    .status.ok   { background: rgba(60,180,90,0.15); border: 1px solid rgba(60,180,90,0.5); }
+    .status.err  { background: rgba(255,60,40,0.15); border: 1px solid rgba(255,90,70,0.6); }
     .status.info { background: rgba(254,67,0,0.12); border: 1px solid rgba(255,145,77,0.4); }
 
     .preview {
@@ -175,14 +141,13 @@
       display: flex; justify-content: space-between; align-items: center; gap: 12px;
       padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 15px;
     }
-    .match-list .meta { color: var(--text-muted); font-size: 13px; }
+    .match-list .meta { color: var(--text-muted); font-size: 13px; line-height: 1.5; }
     .match-list button {
       padding: 8px 12px; cursor: pointer; color: #ff9a8a; font-family: inherit; font-size: 12px;
       background: transparent; border: 1px solid rgba(255,90,70,0.5); border-radius: 6px;
     }
 
     .steps { color: #ddd; font-size: 15px; line-height: 1.7; padding-left: 20px; }
-    .steps code { color: var(--orange-soft); }
 
     .match-actions { display: flex; gap: 8px; flex-shrink: 0; }
     .match-list button.edit { color: var(--orange-light); border-color: rgba(255,145,77,0.5); }
@@ -214,9 +179,9 @@
     <span class="home-section-label">Club Admin</span>
     <h2>Unlock</h2>
     <p>
-      Paste your GitHub access token to add match results. The token is only
-      ever stored on this device, never in the website code, so nobody else
-      can use this page.
+      Paste your GitHub access token to update match results and junior teams.
+      The token is only ever stored on this device, never in the website code,
+      so nobody else can use this page.
     </p>
 
     <div class="field">
@@ -236,7 +201,7 @@
       <summary style="cursor:pointer;color:var(--orange-light);font-weight:bold;">How to get a token (one-time setup)</summary>
       <ol class="steps">
         <li>On GitHub go to <strong>Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token</strong>.</li>
-        <li>Name it "Ngongotahā add-match" and set an expiry (e.g. 1 year).</li>
+        <li>Name it "Ngongotahā admin" and set an expiry (e.g. 1 year).</li>
         <li>Under <strong>Repository access</strong> choose <strong>Only select repositories</strong> and pick your data repo only.</li>
         <li>Under <strong>Permissions → Repository permissions</strong> set <strong>Contents</strong> to <strong>Read and write</strong>.</li>
         <li>Generate, copy the token and paste it above.</li>
@@ -248,147 +213,244 @@
     </details>
   </section>
 
-  <!-- =====================================================
-       ADD MATCH
-       ===================================================== -->
   <div id="appSection" hidden>
 
-    <section class="section">
-      <span class="home-section-label">Season</span>
-      <div class="row" style="align-items:end;">
-        <div class="field" style="margin-bottom:0;">
-          <label for="seasonInput">Season (year)</label>
-          <input id="seasonInput" type="number" min="2000" max="2100" inputmode="numeric">
+    <div class="tabs">
+      <button class="admin-btn" id="tabMatches" type="button">Matches</button>
+      <button class="admin-btn inactive" id="tabTeams" type="button">Junior Teams</button>
+    </div>
+
+    <!-- =====================================================
+         MATCHES PANEL
+         ===================================================== -->
+    <div id="matchesPanel">
+
+      <section class="section">
+        <span class="home-section-label">Season</span>
+        <div class="row" style="align-items:end;">
+          <div class="field" style="margin-bottom:0;">
+            <label for="seasonInput">Season (year)</label>
+            <input id="seasonInput" type="number" min="2000" max="2100" inputmode="numeric">
+          </div>
+          <div>
+            <button class="admin-btn ghost" id="seasonBtn" type="button">Switch season</button>
+          </div>
         </div>
-        <div>
-          <button class="admin-btn ghost" id="seasonBtn" type="button">Switch season</button>
-        </div>
-      </div>
-      <p style="font-size:14px;color:var(--text-muted);line-height:1.6;margin:14px 0 0;">
-        New season? Enter the new year and press Switch. A fresh file is created on your first save,
-        and the old season stays saved as an archive.
-      </p>
-    </section>
+        <p style="font-size:14px;color:var(--text-muted);line-height:1.6;margin:14px 0 0;">
+          New season? Enter the new year and press Switch. A fresh file is created on your first save,
+          and the old season stays saved as an archive.
+        </p>
+      </section>
 
-    <section class="section">
-      <span class="home-section-label">Match Centre</span>
-      <h2 id="formTitle">Add A Match</h2>
-      <div class="status info" id="editBanner" hidden></div>
+      <section class="section">
+        <span class="home-section-label">Match Centre</span>
+        <h2 id="formTitle">Add A Match</h2>
+        <div class="status info" id="editBanner" hidden></div>
 
-      <div class="row">
-        <div class="field">
-          <label for="mDate">Date</label>
-          <input id="mDate" type="date">
-        </div>
-        <div class="field">
-          <label for="mVenue">Home or away</label>
-          <select id="mVenue">
-            <option value="Home">Home</option>
-            <option value="Away">Away</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="mOpponent">Opponent</label>
-        <input id="mOpponent" type="text" placeholder="e.g. Taupo AFC" autocomplete="off">
-      </div>
-
-      <div class="score-row">
-        <div class="field">
-          <label for="mFor">Ngongotahā goals</label>
-          <input id="mFor" type="number" min="0" max="50" inputmode="numeric" value="0">
-        </div>
-        <div class="dash">–</div>
-        <div class="field">
-          <label for="mAgainst">Opponent goals</label>
-          <input id="mAgainst" type="number" min="0" max="50" inputmode="numeric" value="0">
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="mScorers">Our scorers</label>
-        <textarea id="mScorers" placeholder="Arno Greyling x2&#10;Olly Atkinson"></textarea>
-        <small>One player per line. Add <strong>x2</strong> or <strong>x3</strong> after the name for multiple goals. Leave blank for a 0 goal game.</small>
-        <div id="knownPlayers" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;"></div>
-        <small id="knownHint" hidden>Tap a name to add one goal for that player. This keeps spellings matching so a player never gets split into two.</small>
-      </div>
-
-      <label class="label" style="display:block;margin-bottom:8px;color:var(--orange-light);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Preview</label>
-      <pre class="preview" id="preview"></pre>
-
-      <button class="admin-btn" id="saveBtn" type="button">Save match</button>
-      <button class="admin-btn ghost" id="cancelEditBtn" type="button" style="margin-left:8px;" hidden>Cancel edit</button>
-      <button class="admin-btn ghost" id="lockBtn" type="button" style="margin-left:8px;">Lock</button>
-
-      <div class="status" id="saveStatus" role="status"></div>
-    </section>
-
-    <section class="section">
-      <span class="home-section-label">Season <span id="seasonLabel"></span></span>
-      <h2>Top Scorers</h2>
-      <p id="totalsSummary">Loading…</p>
-      <ul class="match-list" id="totalsList"></ul>
-
-      <div class="editor" id="playerEditor" hidden>
-        <h3 id="playerEditorTitle">Edit player</h3>
         <div class="row">
           <div class="field">
-            <label for="pName">Name</label>
-            <input id="pName" type="text" autocomplete="off">
-            <small>Change the spelling here and it is updated in every match too.</small>
+            <label for="mDate">Date</label>
+            <input id="mDate" type="date">
           </div>
           <div class="field">
-            <label for="pStart">Starting goals</label>
-            <input id="pStart" type="number" min="0" max="200" inputmode="numeric" value="0">
-            <small id="pInfo"></small>
+            <label for="mVenue">Home or away</label>
+            <select id="mVenue">
+              <option value="Home">Home</option>
+              <option value="Away">Away</option>
+            </select>
           </div>
         </div>
-        <button class="admin-btn" id="playerSaveBtn" type="button">Save player</button>
-        <button class="admin-btn ghost" id="playerCancelBtn" type="button" style="margin-left:8px;">Cancel</button>
-        <button class="admin-btn ghost danger" id="playerRemoveBtn" type="button" style="margin-left:8px;">Remove player</button>
-        <div class="status" id="playerStatus" role="status"></div>
-      </div>
 
-      <details style="margin-top:22px;">
-        <summary style="cursor:pointer;color:var(--orange-light);font-weight:bold;">Starting goals / corrections</summary>
-        <p style="font-size:14px;color:var(--text-muted);line-height:1.6;">
-          Use this for goals scored <strong>before</strong> you started entering matches here
-          (e.g. Arno Greyling 5). These are added on top of the matches you save.
-          Do not also enter those same games as matches or they will count twice.
-          Enter the starting goals, not the new total. Set 0 to remove a player's starting goals.
-        </p>
+        <div class="field">
+          <label for="mOpponent">Opponent</label>
+          <input id="mOpponent" type="text" placeholder="e.g. Taupo AFC" autocomplete="off">
+        </div>
+
+        <div class="score-row">
+          <div class="field">
+            <label for="mFor">Ngongotahā goals</label>
+            <input id="mFor" type="number" min="0" max="50" inputmode="numeric" value="0">
+          </div>
+          <div class="dash">–</div>
+          <div class="field">
+            <label for="mAgainst">Opponent goals</label>
+            <input id="mAgainst" type="number" min="0" max="50" inputmode="numeric" value="0">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="mScorers">Our scorers</label>
+          <textarea id="mScorers" placeholder="Arno Greyling x2&#10;Olly Atkinson"></textarea>
+          <small>One player per line. Add <strong>x2</strong> or <strong>x3</strong> after the name for multiple goals. Leave blank for a 0 goal game.</small>
+          <div id="knownPlayers" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;"></div>
+          <small id="knownHint" hidden>Tap a name to add one goal for that player. This keeps spellings matching so a player never gets split into two.</small>
+        </div>
+
+        <label style="display:block;margin-bottom:8px;color:var(--orange-light);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Preview</label>
+        <pre class="preview" id="preview"></pre>
+
+        <button class="admin-btn" id="saveBtn" type="button">Save match</button>
+        <button class="admin-btn ghost" id="cancelEditBtn" type="button" style="margin-left:8px;" hidden>Cancel edit</button>
+        <button class="admin-btn ghost" id="lockBtn" type="button" style="margin-left:8px;">Lock</button>
+
+        <div class="status" id="saveStatus" role="status"></div>
+      </section>
+
+      <section class="section">
+        <span class="home-section-label">Season <span id="seasonLabel"></span></span>
+        <h2>Top Scorers</h2>
+        <p id="totalsSummary">Loading…</p>
+        <ul class="match-list" id="totalsList"></ul>
+
+        <div class="editor" id="playerEditor" hidden>
+          <h3 id="playerEditorTitle">Edit player</h3>
+          <div class="row">
+            <div class="field">
+              <label for="pName">Name</label>
+              <input id="pName" type="text" autocomplete="off">
+              <small>Change the spelling here and it is updated in every match too.</small>
+            </div>
+            <div class="field">
+              <label for="pStart">Starting goals</label>
+              <input id="pStart" type="number" min="0" max="200" inputmode="numeric" value="0">
+              <small id="pInfo"></small>
+            </div>
+          </div>
+          <button class="admin-btn" id="playerSaveBtn" type="button">Save player</button>
+          <button class="admin-btn ghost" id="playerCancelBtn" type="button" style="margin-left:8px;">Cancel</button>
+          <button class="admin-btn ghost danger" id="playerRemoveBtn" type="button" style="margin-left:8px;">Remove player</button>
+          <div class="status" id="playerStatus" role="status"></div>
+        </div>
+
+        <details style="margin-top:22px;">
+          <summary style="cursor:pointer;color:var(--orange-light);font-weight:bold;">Starting goals / corrections</summary>
+          <p style="font-size:14px;color:var(--text-muted);line-height:1.6;">
+            Use this for goals scored <strong>before</strong> you started entering matches here
+            (e.g. Arno Greyling 5). These are added on top of the matches you save.
+            Do not also enter those same games as matches or they will count twice.
+            Enter the starting goals, not the new total. Set 0 to remove a player's starting goals.
+          </p>
+          <div class="row">
+            <div class="field">
+              <label for="bName">Player</label>
+              <input id="bName" type="text" autocomplete="off" placeholder="e.g. Arno Greyling">
+            </div>
+            <div class="field">
+              <label for="bGoals">Starting goals</label>
+              <input id="bGoals" type="number" min="0" max="200" inputmode="numeric" value="0">
+            </div>
+          </div>
+          <button class="admin-btn ghost" id="baselineBtn" type="button">Set starting goals</button>
+          <div class="status" id="baselineStatus" role="status"></div>
+        </details>
+      </section>
+
+      <section class="section">
+        <span class="home-section-label">Recent</span>
+        <h2>Saved Matches</h2>
+        <p id="listEmpty">Loading…</p>
+        <ul class="match-list" id="matchList"></ul>
+
+        <details style="margin-top:22px;">
+          <summary style="cursor:pointer;color:#ff9a8a;font-weight:bold;">Clear this season</summary>
+          <p style="font-size:14px;color:var(--text-muted);line-height:1.6;">
+            Deletes every match and starting goal in the current season's file. You'll be asked to type the
+            year to confirm. GitHub keeps the file's history, so an old version can still be recovered
+            from the repo if you ever need it.
+          </p>
+          <button class="admin-btn ghost danger" id="clearSeasonBtn" type="button">Clear this season</button>
+        </details>
+      </section>
+
+    </div>
+
+    <!-- =====================================================
+         JUNIOR TEAMS PANEL
+         ===================================================== -->
+    <div id="teamsPanel" hidden>
+
+      <section class="section">
+        <span class="home-section-label">Junior Teams</span>
+        <h2 id="teamFormTitle">Add A Team</h2>
+        <div class="status info" id="teamEditBanner" hidden></div>
+
         <div class="row">
           <div class="field">
-            <label for="bName">Player</label>
-            <input id="bName" type="text" autocomplete="off" placeholder="e.g. Arno Greyling">
+            <label for="tName">Team name</label>
+            <input id="tName" type="text" autocomplete="off" placeholder="e.g. Thunder">
           </div>
           <div class="field">
-            <label for="bGoals">Starting goals</label>
-            <input id="bGoals" type="number" min="0" max="200" inputmode="numeric" value="0">
+            <label for="tGrade">Grade</label>
+            <select id="tGrade">
+              <option>5th Grade</option>
+              <option>6th Grade</option>
+              <option>7th Grade</option>
+              <option>8th Grade</option>
+              <option>9th Grade</option>
+              <option>10th Grade</option>
+              <option>11th Grade</option>
+              <option>12th Grade</option>
+              <option>13th Grade</option>
+            </select>
           </div>
         </div>
-        <button class="admin-btn ghost" id="baselineBtn" type="button">Set starting goals</button>
-        <div class="status" id="baselineStatus" role="status"></div>
-      </details>
-    </section>
 
-    <section class="section">
-      <span class="home-section-label">Recent</span>
-      <h2>Saved Matches</h2>
-      <p id="listEmpty">Loading…</p>
-      <ul class="match-list" id="matchList"></ul>
+        <div class="row">
+          <div class="field">
+            <label for="tCoach">Coach</label>
+            <input id="tCoach" type="text" autocomplete="off" placeholder="e.g. Kyle Hetherington">
+            <small>Separate several coaches with a comma.</small>
+          </div>
+          <div class="field">
+            <label for="tManager">Manager</label>
+            <input id="tManager" type="text" autocomplete="off" placeholder="Optional">
+          </div>
+        </div>
 
-      <details style="margin-top:22px;">
-        <summary style="cursor:pointer;color:#ff9a8a;font-weight:bold;">Clear this season</summary>
-        <p style="font-size:14px;color:var(--text-muted);line-height:1.6;">
-          Deletes every match and starting goal in the current season's file. You'll be asked to type the
-          year to confirm. GitHub keeps the file's history, so an old version can still be recovered
-          from the repo if you ever need it.
-        </p>
-        <button class="admin-btn ghost danger" id="clearSeasonBtn" type="button">Clear this season</button>
-      </details>
-    </section>
+        <div class="field">
+          <label for="tEmail">Contact email</label>
+          <input id="tEmail" type="email" autocomplete="off" placeholder="Optional">
+          <small>Leave blank to hide the contact line on the website.</small>
+        </div>
+
+        <div class="field">
+          <label for="tFormat">Format</label>
+          <input id="tFormat" type="text" autocomplete="off" placeholder="e.g. 5v5 • Goalkeeper • 2 × 20 minute games">
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="tTraining">Training</label>
+            <input id="tTraining" type="text" autocomplete="off" value="Tuesday &amp; Thursday">
+          </div>
+          <div class="field">
+            <label for="tLocation">Location</label>
+            <input id="tLocation" type="text" autocomplete="off" value="Ngongotahā Domain">
+          </div>
+        </div>
+
+        <button class="admin-btn" id="teamSaveBtn" type="button">Save team</button>
+        <button class="admin-btn ghost" id="teamCancelBtn" type="button" style="margin-left:8px;" hidden>Cancel edit</button>
+
+        <div class="status" id="teamStatus" role="status"></div>
+      </section>
+
+      <section class="section">
+        <span class="home-section-label">Current</span>
+        <h2>Junior Teams</h2>
+        <p id="teamsSummary">Loading…</p>
+        <ul class="match-list" id="teamList"></ul>
+
+        <div id="seedBox" hidden>
+          <button class="admin-btn ghost" id="seedBtn" type="button">Load current teams &amp; coaches</button>
+          <p style="font-size:14px;color:var(--text-muted);line-height:1.6;margin-top:12px;">
+            Fills the list with the 14 teams, coaches and formats currently written on the Junior Teams page,
+            so you only have to correct what has changed.
+          </p>
+        </div>
+      </section>
+
+    </div>
 
   </div>
 
@@ -551,19 +613,17 @@ const REPO_URL = function () {
   return "https://api.github.com/repos/" + CONFIG.owner + "/" + CONFIG.repo;
 };
 
-const FILE_URL = function () {
-  return REPO_URL() + "/contents/" + CONFIG.path;
+const FILE_URL = function (path) {
+  return REPO_URL() + "/contents/" + (path || CONFIG.path);
 };
 
-/* Returns { data, sha }. If the file does not exist yet, starts empty. */
-async function getFile() {
-  const res = await api(FILE_URL() + "?ref=" + encodeURIComponent(CONFIG.branch));
+/* Reads any JSON file from the repo. Returns { data, sha } or { data: null, sha: null } if missing. */
+async function readJson(path) {
+  const res = await api(FILE_URL(path) + "?ref=" + encodeURIComponent(CONFIG.branch));
 
-  if (res.status === 404) {
-    return { data: finalise(newData()), sha: null };
-  }
+  if (res.status === 404) { return { data: null, sha: null }; }
   if (!res.ok) {
-    throw new Error("GitHub error " + res.status + " while reading " + CONFIG.path);
+    throw new Error("GitHub error " + res.status + " while reading " + path);
   }
 
   const json = await res.json();
@@ -572,20 +632,14 @@ async function getFile() {
   try {
     data = JSON.parse(fromBase64(json.content));
   } catch (e) {
-    throw new Error(CONFIG.path + " is not valid JSON. Fix it on GitHub first.");
+    throw new Error(path + " is not valid JSON. Fix it on GitHub first.");
   }
 
-  if (!data || typeof data !== "object" || Array.isArray(data)) {
-    data = newData();
-  }
-
-  return { data: finalise(data), sha: json.sha };
+  return { data: data, sha: json.sha };
 }
 
-async function putFile(data, sha, message) {
-  data.updated = new Date().toISOString();
-  finalise(data);
-
+/* Writes any JSON file to the repo. */
+async function writeJson(path, data, sha, message) {
   const body = {
     message: message,
     content: toBase64(JSON.stringify(data, null, 2) + "\n"),
@@ -594,7 +648,7 @@ async function putFile(data, sha, message) {
 
   if (sha) { body.sha = sha; }
 
-  const res = await api(FILE_URL(), {
+  const res = await api(FILE_URL(path), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body)
@@ -609,6 +663,24 @@ async function putFile(data, sha, message) {
   if (!res.ok) {
     throw new Error("GitHub error " + res.status + " while saving.");
   }
+}
+
+/* Returns { data, sha }. If the season file does not exist yet, starts empty. */
+async function getFile() {
+  const file = await readJson(CONFIG.path);
+  let data = file.data;
+
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    data = newData();
+  }
+
+  return { data: finalise(data), sha: file.sha };
+}
+
+async function putFile(data, sha, message) {
+  data.updated = new Date().toISOString();
+  finalise(data);
+  await writeJson(CONFIG.path, data, sha, message);
 }
 
 
@@ -652,6 +724,7 @@ async function tryUnlock(candidate, remember) {
     $("tokenInput").value = "";
 
     await refreshList();
+    await refreshTeams();
     return true;
 
   } catch (err) {
@@ -672,6 +745,19 @@ function lock() {
   clearStatus($("saveStatus"));
   resetForm();
   closePlayerEditor();
+  resetTeamForm();
+  showTab("matches");
+}
+
+
+/* ---------- Tabs ---------- */
+
+function showTab(name) {
+  const teams = name === "teams";
+  $("matchesPanel").hidden = teams;
+  $("teamsPanel").hidden = !teams;
+  $("tabMatches").className = "admin-btn" + (teams ? " inactive" : "");
+  $("tabTeams").className = "admin-btn" + (teams ? "" : " inactive");
 }
 
 
@@ -1206,6 +1292,323 @@ async function removeMatch(match) {
 }
 
 
+/* =========================================================
+   JUNIOR TEAMS
+   Saved inside the season file as:
+   {
+     ...season data...,
+     teams: [
+       { id, name, grade, coach, manager, email, format, training, location }
+     ]
+   }
+   Empty text means "nothing to show" on the website.
+   ========================================================= */
+
+const DEFAULT_TRAINING = "Tuesday & Thursday";
+const DEFAULT_LOCATION = "Ngongotahā Domain";
+
+/* The teams as they are written on the Junior Teams page today. */
+const SEED_TEAMS = [
+  ["Breeze",     "6th Grade",  "",                  "3v3 • No goalkeeper • 3 × 8 minute games"],
+  ["Mermaids",   "7th Grade",  "Maryanne Gibbs",    "3v3 • No goalkeeper • 3 × 8 minute games"],
+  ["Frost",      "7th Grade",  "Aaron Lawrence",    "3v3 • No goalkeeper • 3 × 8 minute games"],
+  ["Stars",      "7th Grade",  "Aaron Lawrence",    "3v3 • No goalkeeper • 3 × 8 minute games"],
+  ["Warriors",   "7th Grade",  "Harlem Simiona",    "3v3 • No goalkeeper • 3 × 8 minute games"],
+  ["Thunder",    "8th Grade",  "Kyle Hetherington", "5v5 • Goalkeeper • 2 × 20 minute games"],
+  ["Earthquake", "8th Grade",  "Kyle Hetherington", "5v5 • Goalkeeper • 2 × 20 minute games"],
+  ["Tornado",    "9th Grade",  "Shaun Kaupa",       "5v5 • Goalkeeper • 2 × 20 minute games"],
+  ["Lightning",  "9th Grade",  "",                  "5v5 • Goalkeeper • 2 × 20 minute games"],
+  ["Storm",      "10th Grade", "",                  "7v7 • Goalkeeper • 2 × 25 minute games"],
+  ["Avalanche",  "10th Grade", "",                  "7v7 • Goalkeeper • 2 × 25 minute games"],
+  ["Monsoon",    "11th Grade", "Kyle Hetherington", "7v7 • Goalkeeper • 2 × 25 minute halves"],
+  ["Typhoon",    "11th Grade", "Curtis",            "7v7 • Goalkeeper • 2 × 25 minute halves"],
+  ["Blizzard",   "12th Grade", "Te Wehi",           "9v9 • Goalkeeper • 2 × 30 minute halves"]
+];
+
+let editingTeamId = null;
+
+function gradeNumber(g) {
+  return parseInt(String(g), 10) || 99;
+}
+
+function cleanText(id) {
+  return $(id).value.replace(/\s+/g, " ").trim();
+}
+
+function newTeamId() {
+  return "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+function normaliseTeams(data) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) { data = {}; }
+  if (!Array.isArray(data.teams)) { data.teams = []; }
+
+  data.teams.forEach(function (t) {
+    if (!t.id) { t.id = newTeamId(); }
+    ["name", "grade", "coach", "manager", "email", "format", "training", "location"].forEach(function (k) {
+      t[k] = typeof t[k] === "string" ? t[k] : "";
+    });
+  });
+
+  data.teams.sort(function (a, b) {
+    return gradeNumber(a.grade) - gradeNumber(b.grade) || a.name.localeCompare(b.name);
+  });
+
+  return data;
+}
+
+/* Teams are stored inside the season file (season-2026.json) under "teams",
+   so the website only has to read that one address. */
+async function getTeams() {
+  const file = await getFile();
+  return { data: normaliseTeams(file.data), sha: file.sha };
+}
+
+async function putTeams(data, sha, message) {
+  normaliseTeams(data);
+  await putFile(data, sha, message);
+}
+
+function resetTeamForm() {
+  editingTeamId = null;
+  $("teamFormTitle").textContent = "Add A Team";
+  $("teamSaveBtn").textContent = "Save team";
+  $("teamCancelBtn").hidden = true;
+  $("teamEditBanner").hidden = true;
+  $("tName").value = "";
+  $("tGrade").selectedIndex = 0;
+  $("tCoach").value = "";
+  $("tManager").value = "";
+  $("tEmail").value = "";
+  $("tFormat").value = "";
+  $("tTraining").value = DEFAULT_TRAINING;
+  $("tLocation").value = DEFAULT_LOCATION;
+}
+
+function startTeamEdit(t) {
+  editingTeamId = t.id;
+  $("teamFormTitle").textContent = "Edit Team";
+  $("teamSaveBtn").textContent = "Update team";
+  $("teamCancelBtn").hidden = false;
+
+  $("teamEditBanner").hidden = false;
+  $("teamEditBanner").className = "status show info";
+  $("teamEditBanner").textContent = "Editing " + t.name + " (" + t.grade + "). Change anything and press Update team.";
+
+  $("tName").value = t.name;
+
+  /* Keep unusual grades editable by adding them to the list if needed */
+  const sel = $("tGrade");
+  let found = false;
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === t.grade) { found = true; }
+  }
+  if (!found && t.grade) {
+    const opt = document.createElement("option");
+    opt.textContent = t.grade;
+    sel.appendChild(opt);
+  }
+  sel.value = t.grade;
+
+  $("tCoach").value = t.coach;
+  $("tManager").value = t.manager;
+  $("tEmail").value = t.email;
+  $("tFormat").value = t.format;
+  $("tTraining").value = t.training;
+  $("tLocation").value = t.location;
+
+  clearStatus($("teamStatus"));
+  $("teamFormTitle").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function saveTeam() {
+  const status = $("teamStatus");
+  const editing = editingTeamId !== null;
+
+  const team = {
+    id: editing ? editingTeamId : newTeamId(),
+    name: cleanText("tName"),
+    grade: $("tGrade").value,
+    coach: cleanText("tCoach"),
+    manager: cleanText("tManager"),
+    email: cleanText("tEmail"),
+    format: cleanText("tFormat"),
+    training: cleanText("tTraining"),
+    location: cleanText("tLocation")
+  };
+
+  if (!team.name) { return showStatus(status, "err", "Enter the team name."); }
+  if (team.email && !/^\S+@\S+\.\S+$/.test(team.email)) {
+    return showStatus(status, "err", "That email address doesn't look right.");
+  }
+
+  $("teamSaveBtn").disabled = true;
+  showStatus(status, "info", "Saving to GitHub…");
+
+  try {
+    const file = await getTeams();
+    let message;
+
+    if (editing) {
+      const idx = file.data.teams.findIndex(function (t) { return t.id === editingTeamId; });
+
+      if (idx === -1) {
+        throw new Error("That team no longer exists. Cancel the edit and refresh.");
+      }
+
+      file.data.teams[idx] = team;
+      message = "Edit team: " + team.name;
+
+    } else {
+      const duplicate = file.data.teams.some(function (t) {
+        return t.name.toLowerCase() === team.name.toLowerCase();
+      });
+
+      if (duplicate && !confirm("A team called " + team.name + " already exists. Add another?")) {
+        showStatus(status, "info", "Cancelled.");
+        return;
+      }
+
+      file.data.teams.push(team);
+      message = "Add team: " + team.name;
+    }
+
+    await putTeams(file.data, file.sha, message);
+
+    showStatus(status, "ok", (editing ? "Updated. " : "Saved. ") +
+      "The website will show it within a few minutes.");
+
+    resetTeamForm();
+    await refreshTeams();
+
+  } catch (err) {
+    showStatus(status, "err", err.message);
+
+  } finally {
+    $("teamSaveBtn").disabled = false;
+  }
+}
+
+async function removeTeam(team) {
+  if (!confirm("Remove " + team.name + " (" + team.grade + ")?")) { return; }
+
+  const status = $("teamStatus");
+  showStatus(status, "info", "Removing…");
+
+  try {
+    const file = await getTeams();
+
+    file.data.teams = file.data.teams.filter(function (t) { return t.id !== team.id; });
+
+    await putTeams(file.data, file.sha, "Remove team: " + team.name);
+
+    if (editingTeamId === team.id) { resetTeamForm(); }
+
+    showStatus(status, "ok", "Removed.");
+    await refreshTeams();
+
+  } catch (err) {
+    showStatus(status, "err", err.message);
+  }
+}
+
+async function seedTeams() {
+  const status = $("teamStatus");
+
+  if (!confirm("Load the " + SEED_TEAMS.length + " teams currently on the Junior Teams page? This replaces anything in the team list.")) {
+    return;
+  }
+
+  showStatus(status, "info", "Loading teams…");
+
+  try {
+    const file = await getTeams();
+
+    file.data.teams = SEED_TEAMS.map(function (row) {
+      return {
+        id: newTeamId(),
+        name: row[0],
+        grade: row[1],
+        coach: row[2],
+        manager: "",
+        email: "",
+        format: row[3],
+        training: DEFAULT_TRAINING,
+        location: DEFAULT_LOCATION
+      };
+    });
+
+    await putTeams(file.data, file.sha, "Load starting junior teams");
+
+    showStatus(status, "ok", "Teams loaded. Now correct any coaches or managers that have changed.");
+    await refreshTeams();
+
+  } catch (err) {
+    showStatus(status, "err", err.message);
+  }
+}
+
+async function refreshTeams() {
+  const list = $("teamList");
+  const summary = $("teamsSummary");
+
+  list.textContent = "";
+
+  try {
+    const file = await getTeams();
+    const teams = file.data.teams;
+
+    $("seedBox").hidden = teams.length > 0;
+
+    summary.textContent = teams.length
+      ? teams.length + " team(s). Tap Edit to change a coach, manager or format."
+      : "No teams saved yet.";
+
+    teams.forEach(function (t) {
+      const li = document.createElement("li");
+
+      const info = document.createElement("div");
+      const title = document.createElement("div");
+      title.textContent = t.name + "  ·  " + t.grade;
+      const meta = document.createElement("div");
+      meta.className = "meta";
+
+      const parts = [];
+      parts.push("Coach: " + (t.coach || "none listed"));
+      if (t.manager) { parts.push("Manager: " + t.manager); }
+      if (t.email) { parts.push(t.email); }
+      meta.textContent = parts.join("  ·  ");
+
+      info.appendChild(title);
+      info.appendChild(meta);
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "edit";
+      editBtn.textContent = "Edit";
+      editBtn.addEventListener("click", function () { startTeamEdit(t); });
+
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.textContent = "Remove";
+      delBtn.addEventListener("click", function () { removeTeam(t); });
+
+      const actions = document.createElement("div");
+      actions.className = "match-actions";
+      actions.appendChild(editBtn);
+      actions.appendChild(delBtn);
+
+      li.appendChild(info);
+      li.appendChild(actions);
+      list.appendChild(li);
+    });
+
+  } catch (err) {
+    summary.textContent = err.message;
+  }
+}
+
+
 /* ---------- Start ---------- */
 
 $("mDate").value = todayLocal();
@@ -1234,7 +1637,14 @@ $("playerRemoveBtn").addEventListener("click", removePlayer);
 $("seasonBtn").addEventListener("click", switchSeason);
 $("clearSeasonBtn").addEventListener("click", clearSeason);
 
+$("tabMatches").addEventListener("click", function () { showTab("matches"); });
+$("tabTeams").addEventListener("click", function () { showTab("teams"); });
+$("teamSaveBtn").addEventListener("click", saveTeam);
+$("teamCancelBtn").addEventListener("click", resetTeamForm);
+$("seedBtn").addEventListener("click", seedTeams);
+
 updatePreview();
+resetTeamForm();
 
 /* Auto-unlock if a token was remembered on this device. */
 const savedToken = storageGet();
