@@ -3,7 +3,7 @@
   "baseline": {
     "Arno Greyling": 5,
     "Olly Atkinson": 3,
-    "Harshay Kumar": 2
+    "Harshay Kumar": 3
   },
   "matches": [],
   "scorers": [
@@ -12,15 +12,15 @@
       "goals": 5
     },
     {
-      "name": "Olly Atkinson",
+      "name": "Harshay Kumar",
       "goals": 3
     },
     {
-      "name": "Harshay Kumar",
-      "goals": 2
+      "name": "Olly Atkinson",
+      "goals": 3
     }
   ],
   "matchesPlayed": 0,
-  "totalGoals": 10,
-  "updated": "2026-10-25T20:27:44.081Z"
+  "totalGoals": 11,
+  "updated": "2026-10-25T20:35:31.566Z"
 }
