@@ -184,6 +184,15 @@
     .steps { color: #ddd; font-size: 15px; line-height: 1.7; padding-left: 20px; }
     .steps code { color: var(--orange-soft); }
 
+    .match-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .match-list button.edit { color: var(--orange-light); border-color: rgba(255,145,77,0.5); }
+    .editor {
+      margin-top: 18px; padding: 18px;
+      background: #0b0b0b; border: 1px dashed rgba(255,145,77,0.45); border-radius: 10px;
+    }
+    .editor h3 { margin: 0 0 14px; color: #fff; font-size: 18px; }
+    .danger { color: #ff9a8a !important; border-color: rgba(255,90,70,0.55) !important; }
+
     [hidden] { display: none !important; }
 
     @media (max-width: 600px) {
@@ -245,8 +254,26 @@
   <div id="appSection" hidden>
 
     <section class="section">
+      <span class="home-section-label">Season</span>
+      <div class="row" style="align-items:end;">
+        <div class="field" style="margin-bottom:0;">
+          <label for="seasonInput">Season (year)</label>
+          <input id="seasonInput" type="number" min="2000" max="2100" inputmode="numeric">
+        </div>
+        <div>
+          <button class="admin-btn ghost" id="seasonBtn" type="button">Switch season</button>
+        </div>
+      </div>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.6;margin:14px 0 0;">
+        New season? Enter the new year and press Switch. A fresh file is created on your first save,
+        and the old season stays saved as an archive.
+      </p>
+    </section>
+
+    <section class="section">
       <span class="home-section-label">Match Centre</span>
-      <h2>Add A Match</h2>
+      <h2 id="formTitle">Add A Match</h2>
+      <div class="status info" id="editBanner" hidden></div>
 
       <div class="row">
         <div class="field">
@@ -291,6 +318,7 @@
       <pre class="preview" id="preview"></pre>
 
       <button class="admin-btn" id="saveBtn" type="button">Save match</button>
+      <button class="admin-btn ghost" id="cancelEditBtn" type="button" style="margin-left:8px;" hidden>Cancel edit</button>
       <button class="admin-btn ghost" id="lockBtn" type="button" style="margin-left:8px;">Lock</button>
 
       <div class="status" id="saveStatus" role="status"></div>
@@ -300,7 +328,27 @@
       <span class="home-section-label">Season <span id="seasonLabel"></span></span>
       <h2>Top Scorers</h2>
       <p id="totalsSummary">Loading…</p>
-      <ol class="match-list" id="totalsList" style="list-style:decimal inside;"></ol>
+      <ul class="match-list" id="totalsList"></ul>
+
+      <div class="editor" id="playerEditor" hidden>
+        <h3 id="playerEditorTitle">Edit player</h3>
+        <div class="row">
+          <div class="field">
+            <label for="pName">Name</label>
+            <input id="pName" type="text" autocomplete="off">
+            <small>Change the spelling here and it is updated in every match too.</small>
+          </div>
+          <div class="field">
+            <label for="pStart">Starting goals</label>
+            <input id="pStart" type="number" min="0" max="200" inputmode="numeric" value="0">
+            <small id="pInfo"></small>
+          </div>
+        </div>
+        <button class="admin-btn" id="playerSaveBtn" type="button">Save player</button>
+        <button class="admin-btn ghost" id="playerCancelBtn" type="button" style="margin-left:8px;">Cancel</button>
+        <button class="admin-btn ghost danger" id="playerRemoveBtn" type="button" style="margin-left:8px;">Remove player</button>
+        <div class="status" id="playerStatus" role="status"></div>
+      </div>
 
       <details style="margin-top:22px;">
         <summary style="cursor:pointer;color:var(--orange-light);font-weight:bold;">Starting goals / corrections</summary>
@@ -330,6 +378,16 @@
       <h2>Saved Matches</h2>
       <p id="listEmpty">Loading…</p>
       <ul class="match-list" id="matchList"></ul>
+
+      <details style="margin-top:22px;">
+        <summary style="cursor:pointer;color:#ff9a8a;font-weight:bold;">Clear this season</summary>
+        <p style="font-size:14px;color:var(--text-muted);line-height:1.6;">
+          Deletes every match and starting goal in the current season's file. You'll be asked to type the
+          year to confirm. GitHub keeps the file's history, so an old version can still be recovered
+          from the repo if you ever need it.
+        </p>
+        <button class="admin-btn ghost danger" id="clearSeasonBtn" type="button">Clear this season</button>
+      </details>
     </section>
 
   </div>
@@ -351,6 +409,19 @@ const CONFIG = {
 };
 
 const TOKEN_KEY = "ngongotaha_admin_token";
+const SEASON_KEY = "ngongotaha_admin_season";
+
+function setSeason(year) {
+  CONFIG.season = year;
+  CONFIG.path = "season-" + year + ".json";
+}
+
+(function restoreSeason() {
+  try {
+    const y = parseInt(localStorage.getItem(SEASON_KEY), 10);
+    if (y >= 2000 && y <= 2100) { setSeason(y); }
+  } catch (e) { /* ignore */ }
+})();
 let token = "";
 
 const $ = function (id) { return document.getElementById(id); };
@@ -599,6 +670,8 @@ function lock() {
   $("appSection").hidden = true;
   $("lockSection").hidden = false;
   clearStatus($("saveStatus"));
+  resetForm();
+  closePlayerEditor();
 }
 
 
@@ -646,9 +719,64 @@ function updatePreview() {
   $("preview").textContent = JSON.stringify(m, null, 2);
 }
 
+let editingKey = null;
+
+function matchKey(m) {
+  return m.id || (m.date + "|" + m.opponent);
+}
+
+function scorersToText(arr) {
+  const order = [];
+  const counts = {};
+  (arr || []).forEach(function (n) {
+    if (!(n in counts)) { counts[n] = 0; order.push(n); }
+    counts[n]++;
+  });
+  return order.map(function (n) {
+    return counts[n] > 1 ? n + " x" + counts[n] : n;
+  }).join("\n");
+}
+
+function resetForm() {
+  editingKey = null;
+  $("formTitle").textContent = "Add A Match";
+  $("saveBtn").textContent = "Save match";
+  $("cancelEditBtn").hidden = true;
+  $("editBanner").hidden = true;
+  $("mOpponent").value = "";
+  $("mFor").value = "0";
+  $("mAgainst").value = "0";
+  $("mScorers").value = "";
+  $("mDate").value = todayLocal();
+  updatePreview();
+}
+
+function startEdit(m) {
+  editingKey = matchKey(m);
+  $("formTitle").textContent = "Edit Match";
+  $("saveBtn").textContent = "Update match";
+  $("cancelEditBtn").hidden = false;
+
+  $("editBanner").hidden = false;
+  $("editBanner").className = "status show info";
+  $("editBanner").textContent = "Editing " + m.opponent + " (" + m.date + "). Change anything and press Update match.";
+
+  $("mDate").value = m.date;
+  $("mVenue").value = m.venue === "Away" ? "Away" : "Home";
+  $("mOpponent").value = m.opponent;
+  $("mFor").value = m.for;
+  $("mAgainst").value = m.against;
+  $("mScorers").value = scorersToText(m.scorers);
+  updatePreview();
+
+  clearStatus($("saveStatus"));
+  $("formTitle").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 async function saveMatch() {
   const status = $("saveStatus");
   const match = buildMatch();
+  const editing = editingKey !== null;
 
   if (!match.date) { return showStatus(status, "err", "Pick a date."); }
   if (!match.opponent) { return showStatus(status, "err", "Enter the opponent."); }
@@ -670,30 +798,42 @@ async function saveMatch() {
 
   try {
     const file = await getFile();
+    let message;
 
-    const duplicate = file.data.matches.some(function (m) {
-      return m.date === match.date &&
-             m.opponent.toLowerCase() === match.opponent.toLowerCase();
-    });
+    if (editing) {
+      const idx = file.data.matches.findIndex(function (m) { return matchKey(m) === editingKey; });
 
-    if (duplicate && !confirm("A match on this date against this opponent already exists. Add it again?")) {
-      showStatus(status, "info", "Cancelled.");
-      return;
+      if (idx === -1) {
+        throw new Error("That match no longer exists. Cancel the edit and refresh.");
+      }
+
+      match.id = file.data.matches[idx].id || match.id;
+      file.data.matches[idx] = match;
+      message = "Edit match vs " + match.opponent + " (" + match.date + ")";
+
+    } else {
+      const duplicate = file.data.matches.some(function (m) {
+        return m.date === match.date &&
+               m.opponent.toLowerCase() === match.opponent.toLowerCase();
+      });
+
+      if (duplicate && !confirm("A match on this date against this opponent already exists. Add it again?")) {
+        showStatus(status, "info", "Cancelled.");
+        return;
+      }
+
+      file.data.matches.push(match);
+      message = "Add match vs " + match.opponent + " (" + match.date + ")";
     }
 
-    file.data.matches.push(match);
     file.data.matches.sort(function (a, b) { return b.date.localeCompare(a.date); });
 
-    await putFile(file.data, file.sha, "Add match vs " + match.opponent + " (" + match.date + ")");
+    await putFile(file.data, file.sha, message);
 
-    showStatus(status, "ok", "Saved. The website will show it within a minute or two.");
+    showStatus(status, "ok", (editing ? "Updated. " : "Saved. ") +
+      "The website will show it within a few minutes.");
 
-    $("mOpponent").value = "";
-    $("mFor").value = "0";
-    $("mAgainst").value = "0";
-    $("mScorers").value = "";
-    updatePreview();
-
+    resetForm();
     await refreshList();
 
   } catch (err) {
@@ -715,7 +855,7 @@ async function refreshList() {
 
   try {
     const file = await getFile();
-    const matches = file.data.matches.slice(0, 10);
+    const matches = file.data.matches;
 
     renderTotals(file.data);
     renderChips(file.data);
@@ -736,13 +876,24 @@ async function refreshList() {
       info.appendChild(title);
       info.appendChild(meta);
 
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "edit";
+      editBtn.textContent = "Edit";
+      editBtn.addEventListener("click", function () { startEdit(m); });
+
       const btn = document.createElement("button");
       btn.type = "button";
       btn.textContent = "Remove";
       btn.addEventListener("click", function () { removeMatch(m); });
 
+      const actions = document.createElement("div");
+      actions.className = "match-actions";
+      actions.appendChild(editBtn);
+      actions.appendChild(btn);
+
       li.appendChild(info);
-      li.appendChild(btn);
+      li.appendChild(actions);
       list.appendChild(li);
     });
 
@@ -756,19 +907,215 @@ function renderTotals(data) {
   const list = $("totalsList");
   list.textContent = "";
   $("seasonLabel").textContent = data.season;
+  $("seasonInput").value = CONFIG.season;
 
   $("totalsSummary").textContent = data.scorers.length
     ? data.totalGoals + " goals from " + data.scorers.length + " scorers, " +
       data.matchesPlayed + " match(es) entered."
     : "No scorers yet.";
 
-  data.scorers.forEach(function (p) {
+  let rank = 0;
+  let prev = null;
+
+  data.scorers.forEach(function (p, i) {
+    if (p.goals !== prev) { rank = i + 1; prev = p.goals; }
+
     const li = document.createElement("li");
-    li.style.display = "list-item";
-    li.textContent = p.name + " , " + p.goals + (p.goals === 1 ? " goal" : " goals");
+
+    const info = document.createElement("div");
+    info.textContent = rank + ".  " + p.name + ":  " + p.goals + (p.goals === 1 ? " goal" : " goals");
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "edit";
+    btn.textContent = "Edit";
+    btn.addEventListener("click", function () { openPlayerEditor(p.name, data); });
+
+    li.appendChild(info);
+    li.appendChild(btn);
     list.appendChild(li);
   });
 }
+
+let editingPlayer = null;
+
+function baselineKeyFor(data, name) {
+  const lower = name.toLowerCase();
+  return Object.keys(data.baseline || {}).filter(function (k) { return k.toLowerCase() === lower; });
+}
+
+function openPlayerEditor(name, data) {
+  editingPlayer = name;
+
+  const lower = name.toLowerCase();
+  let fromMatches = 0;
+  data.matches.forEach(function (m) {
+    (m.scorers || []).forEach(function (n) { if (n.toLowerCase() === lower) { fromMatches++; } });
+  });
+
+  let start = 0;
+  baselineKeyFor(data, name).forEach(function (k) { start += Number(data.baseline[k]) || 0; });
+
+  $("playerEditorTitle").textContent = "Edit " + name;
+  $("pName").value = name;
+  $("pStart").value = start;
+  $("pInfo").textContent = "Plus " + fromMatches + " goal(s) from saved matches.";
+
+  clearStatus($("playerStatus"));
+  $("playerEditor").hidden = false;
+  $("playerEditor").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function closePlayerEditor() {
+  editingPlayer = null;
+  $("playerEditor").hidden = true;
+  clearStatus($("playerStatus"));
+}
+
+async function savePlayer() {
+  const status = $("playerStatus");
+  const oldName = editingPlayer;
+  const typed = $("pName").value.replace(/\s+/g, " ").trim();
+  const start = parseInt($("pStart").value, 10);
+
+  if (!oldName) { return; }
+  if (!typed) { return showStatus(status, "err", "Enter a name."); }
+  if (!Number.isInteger(start) || start < 0) {
+    return showStatus(status, "err", "Enter starting goals as a whole number.");
+  }
+
+  $("playerSaveBtn").disabled = true;
+  showStatus(status, "info", "Saving…");
+
+  try {
+    const file = await getFile();
+    const oldLower = oldName.toLowerCase();
+
+    let newName = typed;
+    if (typed.toLowerCase() !== oldLower) {
+      newName = canonName(file.data, typed);
+
+      if (newName.toLowerCase() === typed.toLowerCase() && newName !== oldName &&
+          file.data.scorers.some(function (p) { return p.name === newName; })) {
+        if (!confirm(newName + " already exists. Merge " + oldName + "'s goals into them?")) {
+          showStatus(status, "info", "Cancelled.");
+          return;
+        }
+      }
+    }
+
+    /* Rename inside every match */
+    file.data.matches.forEach(function (m) {
+      m.scorers = (m.scorers || []).map(function (n) {
+        return n.toLowerCase() === oldLower ? newName : n;
+      });
+    });
+
+    /* Starting goals: clear the old entry, set the new one */
+    let merged = 0;
+    baselineKeyFor(file.data, oldName).forEach(function (k) { delete file.data.baseline[k]; });
+
+    if (newName.toLowerCase() !== oldLower) {
+      baselineKeyFor(file.data, newName).forEach(function (k) {
+        merged += Number(file.data.baseline[k]) || 0;
+        delete file.data.baseline[k];
+      });
+    }
+
+    if (start + merged > 0) { file.data.baseline[newName] = start + merged; }
+
+    await putFile(file.data, file.sha, "Edit player: " + oldName + (newName !== oldName ? " -> " + newName : ""));
+
+    closePlayerEditor();
+    showStatus($("saveStatus"), "ok", "Player updated.");
+    await refreshList();
+
+  } catch (err) {
+    showStatus(status, "err", err.message);
+
+  } finally {
+    $("playerSaveBtn").disabled = false;
+  }
+}
+
+async function removePlayer() {
+  const status = $("playerStatus");
+  const name = editingPlayer;
+
+  if (!name) { return; }
+  if (!confirm("Remove " + name + " from every match and from the starting goals? Their goals will disappear from this season.")) {
+    return;
+  }
+
+  showStatus(status, "info", "Removing…");
+
+  try {
+    const file = await getFile();
+    const lower = name.toLowerCase();
+
+    file.data.matches.forEach(function (m) {
+      m.scorers = (m.scorers || []).filter(function (n) { return n.toLowerCase() !== lower; });
+    });
+    baselineKeyFor(file.data, name).forEach(function (k) { delete file.data.baseline[k]; });
+
+    await putFile(file.data, file.sha, "Remove player: " + name);
+
+    closePlayerEditor();
+    showStatus($("saveStatus"), "ok", name + " removed.");
+    await refreshList();
+
+  } catch (err) {
+    showStatus(status, "err", err.message);
+  }
+}
+
+
+/* ---------- Season switch / clear ---------- */
+
+async function switchSeason() {
+  const year = parseInt($("seasonInput").value, 10);
+
+  if (!(year >= 2000 && year <= 2100)) {
+    return showStatus($("saveStatus"), "err", "Enter a season year like 2027.");
+  }
+
+  setSeason(year);
+  try { localStorage.setItem(SEASON_KEY, String(year)); } catch (e) { /* ignore */ }
+
+  resetForm();
+  closePlayerEditor();
+  showStatus($("saveStatus"), "info", "Now working on season " + year + ".");
+  await refreshList();
+}
+
+async function clearSeason() {
+  const year = String(CONFIG.season);
+  const typed = prompt("This deletes ALL matches and starting goals for " + year + ". Type " + year + " to confirm.");
+
+  if (typed === null) { return; }
+  if (typed.trim() !== year) {
+    return showStatus($("saveStatus"), "err", "Cancelled. The year didn't match.");
+  }
+
+  showStatus($("saveStatus"), "info", "Clearing…");
+
+  try {
+    const file = await getFile();
+    file.data.matches = [];
+    file.data.baseline = {};
+
+    await putFile(file.data, file.sha, "Clear season " + year);
+
+    resetForm();
+    closePlayerEditor();
+    showStatus($("saveStatus"), "ok", "Season " + year + " cleared.");
+    await refreshList();
+
+  } catch (err) {
+    showStatus($("saveStatus"), "err", err.message);
+  }
+}
+
 
 function renderChips(data) {
   const box = $("knownPlayers");
@@ -880,6 +1227,12 @@ $("tokenInput").addEventListener("keydown", function (e) {
 $("saveBtn").addEventListener("click", saveMatch);
 $("lockBtn").addEventListener("click", lock);
 $("baselineBtn").addEventListener("click", setBaseline);
+$("cancelEditBtn").addEventListener("click", resetForm);
+$("playerSaveBtn").addEventListener("click", savePlayer);
+$("playerCancelBtn").addEventListener("click", closePlayerEditor);
+$("playerRemoveBtn").addEventListener("click", removePlayer);
+$("seasonBtn").addEventListener("click", switchSeason);
+$("clearSeasonBtn").addEventListener("click", clearSeason);
 
 updatePreview();
 
