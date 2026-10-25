@@ -2,8 +2,8 @@
   "season": 2026,
   "baseline": {
     "Arno Greyling": 5,
-    "Olly Atkinson": 3,
-    "Harshay Kumar": 3
+    "Harshay Kumar": 3,
+    "Olly Atkinson": 2
   },
   "matches": [],
   "scorers": [
@@ -17,10 +17,10 @@
     },
     {
       "name": "Olly Atkinson",
-      "goals": 3
+      "goals": 2
     }
   ],
   "matchesPlayed": 0,
-  "totalGoals": 11,
-  "updated": "2026-10-25T20:05:27.167Z"
+  "totalGoals": 10,
+  "updated": "2026-10-25T20:27:18.116Z"
 }
