@@ -22,5 +22,161 @@
   ],
   "matchesPlayed": 0,
   "totalGoals": 11,
-  "updated": "2026-10-25T20:35:31.566Z"
+  "updated": "2026-10-25T23:51:16.435Z",
+  "teams": [
+    {
+      "id": "tmvoheeoiy1yb",
+      "name": "Breeze",
+      "grade": "6th Grade",
+      "coach": "",
+      "manager": "",
+      "email": "",
+      "format": "3v3 • No goalkeeper • 3 × 8 minute games",
+      "training": "Tuesday & Thursday",
+      "location": "Ngongotahā Domain"
+    },
+    {
+      "id": "tmvoheeoir2np",
+      "name": "Frost",
+      "grade": "7th Grade",
+      "coach": "Aaron Lawrence",
+      "manager": "",
+      "email": "",
+      "format": "3v3 • No goalkeeper • 3 × 8 minute games",
+      "training": "Tuesday & Thursday",
+      "location": "Ngongotahā Domain"
+    },
+    {
+      "id": "tmvoheeoitu08",
+      "name": "Mermaids",
+      "grade": "7th Grade",
+      "coach": "Maryanne Gibbs",
+      "manager": "",
+      "email": "",
+      "format": "3v3 • No goalkeeper • 3 × 8 minute games",
+      "training": "Tuesday & Thursday",
+      "location": "Ngongotahā Domain"
+    },
+    {
+      "id": "tmvoheeoiqdyx",
+      "name": "Stars",
+      "grade": "7th Grade",
+      "coach": "Aaron Lawrence",
+      "manager": "",
+      "email": "",
+      "format": "3v3 • No goalkeeper • 3 × 8 minute games",
+      "training": "Tuesday & Thursday",
+      "location": "Ngongotahā Domain"
+    },
+    {
+      "id": "tmvoheeoi1q28",
+      "name": "Warriors",
+      "grade": "7th Grade",
+      "coach": "Harlem Simiona",
+      "manager": "",
+      "email": "",
+      "format": "3v3 • No goalkeeper • 3 × 8 minute games",
+      "training": "Tuesday & Thursday",
+      "location": "Ngongotahā Domain"
+    },
+    {
+      "id": "tmvoheeoig6s4",
+      "name": "Earthquake",
+      "grade": "8th Grade",
+      "coach": "Kyle Hetherington",
+      "manager": "",
+      "email": "",
+      "format": "5v5 • Goalkeeper • 2 × 20 minute games",
+      "training": "Tuesday & Thursday",
+      "location": "Ngongotahā Domain"
+    },
+    {
+      "id": "tmvoheeoi1xyh",
+      "name": "Thunder",
+      "grade": "8th Grade",
+      "coach": "Kyle Hetherington",
+      "manager": "",
+      "email": "",
+      "format": "5v5 • Goalkeeper • 2 × 20 minute games",
+      "training": "Tuesday & Thursday",
+      "location": "Ngongotahā Domain"
+    },
+    {
+      "id": "tmvoheeoi3fni",
+      "name": "Lightning",
+      "grade": "9th Grade",
+      "coach": "",
+      "manager": "",
+      "email": "",
+      "format": "5v5 • Goalkeeper • 2 × 20 minute games",
+      "training": "Tuesday & Thursday",
+      "location": "Ngongotahā Domain"
+    },
+    {
+      "id": "tmvoheeoic69i",
+      "name": "Tornado",
+      "grade": "9th Grade",
+      "coach": "Shaun Kaupa",
+      "manager": "",
+      "email": "",
+      "format": "5v5 • Goalkeeper • 2 × 20 minute games",
+      "training": "Tuesday & Thursday",
+      "location": "Ngongotahā Domain"
+    },
+    {
+      "id": "tmvoheeoi56v0",
+      "name": "Avalanche",
+      "grade": "10th Grade",
+      "coach": "",
+      "manager": "",
+      "email": "",
+      "format": "7v7 • Goalkeeper • 2 × 25 minute games",
+      "training": "Tuesday & Thursday",
+      "location": "Ngongotahā Domain"
+    },
+    {
+      "id": "tmvoheeoiagap",
+      "name": "Storm",
+      "grade": "10th Grade",
+      "coach": "",
+      "manager": "",
+      "email": "",
+      "format": "7v7 • Goalkeeper • 2 × 25 minute games",
+      "training": "Tuesday & Thursday",
+      "location": "Ngongotahā Domain"
+    },
+    {
+      "id": "tmvoheeoil2pp",
+      "name": "Monsoon",
+      "grade": "11th Grade",
+      "coach": "Kyle Hetherington",
+      "manager": "",
+      "email": "",
+      "format": "7v7 • Goalkeeper • 2 × 25 minute halves",
+      "training": "Tuesday & Thursday",
+      "location": "Ngongotahā Domain"
+    },
+    {
+      "id": "tmvoheeoip8y1",
+      "name": "Typhoon",
+      "grade": "11th Grade",
+      "coach": "Curtis",
+      "manager": "",
+      "email": "",
+      "format": "7v7 • Goalkeeper • 2 × 25 minute halves",
+      "training": "Tuesday & Thursday",
+      "location": "Ngongotahā Domain"
+    },
+    {
+      "id": "tmvoheeoikbir",
+      "name": "Blizzard",
+      "grade": "12th Grade",
+      "coach": "Te Wehi",
+      "manager": "",
+      "email": "",
+      "format": "9v9 • Goalkeeper • 2 × 30 minute halves",
+      "training": "Tuesday & Thursday",
+      "location": "Ngongotahā Domain"
+    }
+  ]
 }
