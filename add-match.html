@@ -218,6 +218,7 @@
     <div class="tabs">
       <button class="admin-btn" id="tabMatches" type="button">Matches</button>
       <button class="admin-btn inactive" id="tabTeams" type="button">Junior Teams</button>
+      <button class="admin-btn inactive" id="tabCr1" type="button">CR1</button>
     </div>
 
     <!-- =====================================================
@@ -360,6 +361,51 @@
           </p>
           <button class="admin-btn ghost danger" id="clearSeasonBtn" type="button">Clear this season</button>
         </details>
+      </section>
+
+    </div>
+
+    <!-- =====================================================
+         CR1 PANEL
+         ===================================================== -->
+    <div id="cr1Panel" hidden>
+
+      <section class="section">
+        <span class="home-section-label">CR1 Project</span>
+        <h2>Session Dates</h2>
+
+        <div class="row">
+          <div class="field">
+            <label for="cStart">First session</label>
+            <input id="cStart" type="date">
+          </div>
+          <div class="field">
+            <label for="cEnd">Last session</label>
+            <input id="cEnd" type="date">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="cEndHour">Session finishes (24hr)</label>
+            <input id="cEndHour" type="number" min="1" max="23" inputmode="numeric" value="12">
+            <small>12 = 12pm. The session disappears from the website after this time on the day.</small>
+          </div>
+          <div class="field">
+            <label for="cTime">Time / place text</label>
+            <input id="cTime" type="text" autocomplete="off" placeholder="e.g. 10am – 12pm at Mitre 10 Park">
+            <small>Optional. Shown on each session card.</small>
+          </div>
+        </div>
+
+        <label style="display:block;margin-bottom:8px;color:var(--orange-light);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">Saturdays in this range</label>
+        <p id="cr1Summary" style="font-size:14px;color:var(--text-muted);margin:0 0 8px;"></p>
+        <ul class="match-list" id="cr1List"></ul>
+
+        <div style="margin-top:20px;">
+          <button class="admin-btn" id="cr1SaveBtn" type="button">Save CR1 dates</button>
+        </div>
+        <div class="status" id="cr1Status" role="status"></div>
       </section>
 
     </div>
@@ -538,6 +584,8 @@ function storageClear() {
      scorers:  [ { name, goals } ... ]   <- ready-made table, highest first
      baseline: { "Name": goals }         <- goals scored before matches were entered
      matches:  [ ... ]                   <- every match
+     teams:    [ ... ]                   <- junior teams
+     cr1:      { start, end, skip, endHour, timeText }  <- CR1 session dates
    }
 ------------------------------------------ */
 
@@ -725,6 +773,7 @@ async function tryUnlock(candidate, remember) {
 
     await refreshList();
     await refreshTeams();
+    await refreshCR1();
     return true;
 
   } catch (err) {
@@ -753,11 +802,11 @@ function lock() {
 /* ---------- Tabs ---------- */
 
 function showTab(name) {
-  const teams = name === "teams";
-  $("matchesPanel").hidden = teams;
-  $("teamsPanel").hidden = !teams;
-  $("tabMatches").className = "admin-btn" + (teams ? " inactive" : "");
-  $("tabTeams").className = "admin-btn" + (teams ? "" : " inactive");
+  ["matches", "teams", "cr1"].forEach(function (n) {
+    $(n + "Panel").hidden = (n !== name);
+    $("tab" + n.charAt(0).toUpperCase() + n.slice(1)).className =
+      "admin-btn" + (n === name ? "" : " inactive");
+  });
 }
 
 
@@ -1172,6 +1221,7 @@ async function switchSeason() {
   closePlayerEditor();
   showStatus($("saveStatus"), "info", "Now working on season " + year + ".");
   await refreshList();
+  await refreshCR1();
 }
 
 async function clearSeason() {
@@ -1609,6 +1659,142 @@ async function refreshTeams() {
 }
 
 
+/* =========================================================
+   CR1 SESSIONS
+   Saved inside the season file as:
+   cr1: { start, end, skip: ["2026-11-14"], endHour, timeText }
+   ========================================================= */
+
+let cr1Skip = [];
+
+function saturdaysBetween(start, end) {
+  const out = [];
+  if (!start || !end) { return out; }
+
+  let d = new Date(start + "T00:00:00Z");
+  const last = new Date(end + "T00:00:00Z");
+
+  while (d <= last && d.getUTCDay() !== 6) {
+    d = new Date(d.getTime() + 24 * 60 * 60 * 1000);
+  }
+  while (d <= last) {
+    out.push(d.toISOString().slice(0, 10));
+    d = new Date(d.getTime() + 7 * 24 * 60 * 60 * 1000);
+  }
+  return out;
+}
+
+function prettyDate(iso) {
+  return new Date(iso + "T00:00:00Z").toLocaleDateString("en-NZ", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC"
+  });
+}
+
+function renderCR1List() {
+  const list = $("cr1List");
+  list.textContent = "";
+
+  const sats = saturdaysBetween($("cStart").value, $("cEnd").value);
+  const running = sats.filter(function (s) { return cr1Skip.indexOf(s) === -1; });
+
+  $("cr1Summary").textContent = sats.length
+    ? running.length + " session(s) running, " + (sats.length - running.length) + " cancelled."
+    : "Pick a first and last date to see the Saturdays.";
+
+  let n = 0;
+  sats.forEach(function (iso) {
+    const cancelled = cr1Skip.indexOf(iso) !== -1;
+    if (!cancelled) { n++; }
+
+    const li = document.createElement("li");
+
+    const info = document.createElement("div");
+    const title = document.createElement("div");
+    title.textContent = prettyDate(iso);
+    if (cancelled) { title.style.textDecoration = "line-through"; title.style.opacity = "0.6"; }
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    meta.textContent = cancelled ? "Cancelled (hidden on website)" : "Session " + n + " of " + running.length;
+    info.appendChild(title);
+    info.appendChild(meta);
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = cancelled ? "Restore" : "Cancel";
+    if (cancelled) { btn.className = "edit"; }
+    btn.addEventListener("click", function () {
+      if (cancelled) {
+        cr1Skip = cr1Skip.filter(function (s) { return s !== iso; });
+      } else {
+        cr1Skip.push(iso);
+      }
+      renderCR1List();
+    });
+
+    li.appendChild(info);
+    li.appendChild(btn);
+    list.appendChild(li);
+  });
+}
+
+async function refreshCR1() {
+  try {
+    const file = await getFile();
+    const c = file.data.cr1 || {};
+
+    $("cStart").value = c.start || "2026-10-31";
+    $("cEnd").value = c.end || "2026-12-05";
+    $("cEndHour").value = c.endHour || 12;
+    $("cTime").value = c.timeText || "";
+    cr1Skip = Array.isArray(c.skip) ? c.skip.slice() : [];
+
+    renderCR1List();
+  } catch (err) {
+    showStatus($("cr1Status"), "err", err.message);
+  }
+}
+
+async function saveCR1() {
+  const status = $("cr1Status");
+  const start = $("cStart").value;
+  const end = $("cEnd").value;
+  const endHour = parseInt($("cEndHour").value, 10);
+
+  if (!start || !end) { return showStatus(status, "err", "Pick both a first and last date."); }
+  if (end < start) { return showStatus(status, "err", "The last session must be after the first."); }
+  if (!(endHour >= 1 && endHour <= 23)) { return showStatus(status, "err", "Finish time must be an hour from 1 to 23."); }
+
+  const sats = saturdaysBetween(start, end);
+  if (!sats.length) { return showStatus(status, "err", "There are no Saturdays between those dates."); }
+
+  $("cr1SaveBtn").disabled = true;
+  showStatus(status, "info", "Saving to GitHub…");
+
+  try {
+    const file = await getFile();
+
+    file.data.cr1 = {
+      start: start,
+      end: end,
+      skip: cr1Skip.filter(function (s) { return sats.indexOf(s) !== -1; }).sort(),
+      endHour: endHour,
+      timeText: $("cTime").value.replace(/\s+/g, " ").trim()
+    };
+
+    await putFile(file.data, file.sha, "Update CR1 dates (" + start + " to " + end + ")");
+
+    showStatus(status, "ok", "Saved. The website will show it within a few minutes.");
+    await refreshCR1();
+
+  } catch (err) {
+    showStatus(status, "err", err.message);
+
+  } finally {
+    $("cr1SaveBtn").disabled = false;
+  }
+}
+
+
 /* ---------- Start ---------- */
 
 $("mDate").value = todayLocal();
@@ -1639,9 +1825,15 @@ $("clearSeasonBtn").addEventListener("click", clearSeason);
 
 $("tabMatches").addEventListener("click", function () { showTab("matches"); });
 $("tabTeams").addEventListener("click", function () { showTab("teams"); });
+$("tabCr1").addEventListener("click", function () { showTab("cr1"); });
 $("teamSaveBtn").addEventListener("click", saveTeam);
 $("teamCancelBtn").addEventListener("click", resetTeamForm);
 $("seedBtn").addEventListener("click", seedTeams);
+
+$("cr1SaveBtn").addEventListener("click", saveCR1);
+["cStart", "cEnd"].forEach(function (id) {
+  $(id).addEventListener("input", renderCR1List);
+});
 
 updatePreview();
 resetTeamForm();
