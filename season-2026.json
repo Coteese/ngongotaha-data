@@ -22,8 +22,19 @@
   ],
   "matchesPlayed": 0,
   "totalGoals": 11,
-  "updated": "2026-10-25T23:51:16.435Z",
+  "updated": "2026-10-26T00:39:53.652Z",
   "teams": [
+    {
+      "id": "tmvoj4x609o0x",
+      "name": "Meteors",
+      "grade": "5th Grade",
+      "coach": "",
+      "manager": "",
+      "email": "",
+      "format": "3v3 • No goalkeeper • 3x 8 min games",
+      "training": "Tuesday's",
+      "location": "Ngongotahā AFC club rooms"
+    },
     {
       "id": "tmvoheeoiy1yb",
       "name": "Breeze",
