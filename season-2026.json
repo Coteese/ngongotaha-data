@@ -22,7 +22,7 @@
   ],
   "matchesPlayed": 0,
   "totalGoals": 11,
-  "updated": "2026-10-26T00:53:50.340Z",
+  "updated": "2026-10-26T07:17:59.633Z",
   "teams": [
     {
       "id": "tmvoj6xk41vyf",
@@ -203,7 +203,7 @@
   ],
   "cr1": {
     "start": "2026-10-31",
-    "end": "2026-12-05",
+    "end": "2026-12-12",
     "skip": [],
     "endHour": 11,
     "timeText": "10am through to 11am"
