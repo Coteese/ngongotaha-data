@@ -22,8 +22,19 @@
   ],
   "matchesPlayed": 0,
   "totalGoals": 11,
-  "updated": "2026-10-26T00:39:53.652Z",
+  "updated": "2026-10-26T00:41:27.656Z",
   "teams": [
+    {
+      "id": "tmvoj6xk41vyf",
+      "name": "Eclipse",
+      "grade": "5th Grade",
+      "coach": "",
+      "manager": "",
+      "email": "",
+      "format": "3v3 • No goalkeeper • 3x 8 min games",
+      "training": "Tuesday",
+      "location": "Ngongotahā AFC clubrooms"
+    },
     {
       "id": "tmvoj4x609o0x",
       "name": "Meteors",
