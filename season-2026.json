@@ -22,7 +22,7 @@
   ],
   "matchesPlayed": 0,
   "totalGoals": 11,
-  "updated": "2026-10-26T00:43:36.131Z",
+  "updated": "2026-10-26T00:52:32.625Z",
   "teams": [
     {
       "id": "tmvoj6xk41vyf",
@@ -200,5 +200,12 @@
       "training": "Tuesday & Thursday",
       "location": "Ngongotahā Domain"
     }
-  ]
+  ],
+  "cr1": {
+    "start": "2026-10-31",
+    "end": "2026-12-05",
+    "skip": [],
+    "endHour": 12,
+    "timeText": ""
+  }
 }
