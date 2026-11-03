@@ -381,5 +381,19 @@
       "badge": "",
       "visible": true
     }
+  ],
+  "shopCategories": [
+    {
+      "id": "matchwear",
+      "label": "Matchwear"
+    },
+    {
+      "id": "accessories",
+      "label": "Accessories"
+    },
+    {
+      "id": "supporter-gear",
+      "label": "Supporter Gear"
+    }
   ]
 }
