@@ -237,5 +237,28 @@
       "image": "background.jpg",
       "text": "Hire the Ngongotahā Football Club rooms for meetings, celebrations, functions and community events."
     }
+  ],
+  "hireCastles": [
+    {
+      "id": "bc1",
+      "name": "Bouncy Castle 1",
+      "text": "Bouncy castle hire option.",
+      "image": "castle1.jpg",
+      "visible": true
+    },
+    {
+      "id": "bc2",
+      "name": "Bouncy Castle 2",
+      "text": "Bouncy castle hire option.",
+      "image": "castle2.jpg",
+      "visible": true
+    },
+    {
+      "id": "bc3",
+      "name": "Bouncy Castle 3",
+      "text": "Bouncy castle hire option.",
+      "image": "castle3.jpg",
+      "visible": true
+    }
   ]
 }
