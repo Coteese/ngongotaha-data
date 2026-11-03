@@ -117,5 +117,42 @@
       "body": "Ngongotahā AFC’s Children First (CR1) programme is returning for its third consecutive year, with the new programme kicking off on Saturday, 31 October 2026.\n\nBuilt around the belief that every child deserves the opportunity to play football, CR1 continues to break down barriers and make the game accessible to tamariki across Rotorua. Open to children aged 3–13, the programme provides a fun, welcoming environment where young players can develop their skills, build confidence and make new friends.\n\nClub president Aaron Lawrence says the programme is about empowering young people to play football and have fun, while co-founder and ex-first team coach Trevor Johnston recognises the financial challenges football can place on families.\n\nCR1 helps remove these barriers by providing a free football programme, food for children on Saturday mornings and a free bus service to help with transport. There are no eligibility criteria, and all children in Rotorua are welcome to get involved.\n\nFollowing the success of previous years, the programme continues to build on Ngongotahā AFC’s commitment to making football accessible to everyone. Support from the New Zealand Community Trust, which awarded the club a $21,060 grant, has helped support the programme and its ongoing mission.\n\nAs CR1 enters its third year, the goal remains the same: to give more local tamariki the chance to experience football, enjoy being active and feel part of their community.\n\nCR1 kicks off on Saturday, 31 October and will continue to run all the way through to Christmas. Every child is welcome!\n\nMassive thanks to all of our coaches and sponsors for making this happen each year!",
       "visible": true
     }
+  ],
+  "sponsors": [
+    {
+      "id": "s0",
+      "name": "Bev and Jason Waller - Arizto",
+      "link": "https://www.arizto.co.nz/our-people/profile/bev-and-jason-waller/",
+      "image": "sponsor1.jpg",
+      "visible": true
+    },
+    {
+      "id": "s1",
+      "name": "McDonald's New Zealand",
+      "link": "https://www.mcdonalds.com/nz/en-nz.html",
+      "image": "sponsor2.jpg",
+      "visible": true
+    },
+    {
+      "id": "s2",
+      "name": "VIP Plumbing and Gasfittings",
+      "link": "https://vipplumbing.co.nz/",
+      "image": "sponsor3.jpg",
+      "visible": true
+    },
+    {
+      "id": "s3",
+      "name": "Douglas Automotive",
+      "link": "https://www.douglasautomotive.net/",
+      "image": "sponsor4.jpg",
+      "visible": true
+    },
+    {
+      "id": "s4",
+      "name": "Friendly Manager",
+      "link": "https://www.friendlymanager.com/",
+      "image": "sponsor5.jpg",
+      "visible": true
+    }
   ]
 }
