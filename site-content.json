@@ -154,5 +154,25 @@
       "image": "sponsor5.jpg",
       "visible": true
     }
+  ],
+  "navDropdown": [
+    {
+      "id": "d0",
+      "label": "Senior Teams",
+      "url": "senior-teams.html",
+      "visible": true
+    },
+    {
+      "id": "d1",
+      "label": "Junior Teams",
+      "url": "junior-teams.html",
+      "visible": true
+    },
+    {
+      "id": "d2",
+      "label": "Women's Teams",
+      "url": "womens-teams.html",
+      "visible": true
+    }
   ]
 }
