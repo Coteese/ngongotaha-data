@@ -260,5 +260,25 @@
       "image": "castle3.jpg",
       "visible": true
     }
+  ],
+  "hireInfo": [
+    {
+      "id": "i1",
+      "icon": "🎈",
+      "title": "Great For Parties",
+      "text": "Bouncy castles provide an easy way to add some fun to birthdays and family events."
+    },
+    {
+      "id": "i2",
+      "icon": "🏠",
+      "title": "Club Facilities",
+      "text": "Our club rooms provide a practical space for functions, meetings and community events."
+    },
+    {
+      "id": "i3",
+      "icon": "⚽",
+      "title": "Support The Club",
+      "text": "Your hire helps support the continued development of Ngongotahā Football Club."
+    }
   ]
 }
