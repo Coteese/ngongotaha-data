@@ -1,0 +1,68 @@
+{
+  "navTop": [
+    {
+      "id": "n0",
+      "label": "Home",
+      "url": "index.html",
+      "newTab": false,
+      "dropdown": false,
+      "visible": true
+    },
+    {
+      "id": "n1",
+      "label": "About Us",
+      "url": "aboutus.html",
+      "newTab": false,
+      "dropdown": false,
+      "visible": true
+    },
+    {
+      "id": "n2",
+      "label": "Login",
+      "url": "https://ngongotahaafc.friendlymanager.com",
+      "newTab": true,
+      "dropdown": false,
+      "visible": true
+    },
+    {
+      "id": "n3",
+      "label": "Registrations",
+      "url": "registrations.html",
+      "newTab": false,
+      "dropdown": false,
+      "visible": true
+    },
+    {
+      "id": "n4",
+      "label": "CR1 Project",
+      "url": "cr1.html",
+      "newTab": false,
+      "dropdown": false,
+      "visible": true
+    },
+    {
+      "id": "n5",
+      "label": "Hire & Facilities",
+      "url": "hire.html",
+      "newTab": false,
+      "dropdown": false,
+      "visible": true
+    },
+    {
+      "id": "n6",
+      "label": "Club Shop",
+      "url": "shop.html",
+      "newTab": false,
+      "dropdown": false,
+      "visible": true
+    },
+    {
+      "id": "n7",
+      "label": "Ngongotahā Teams",
+      "url": "",
+      "newTab": false,
+      "dropdown": true,
+      "visible": true
+    }
+  ]
+}
