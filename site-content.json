@@ -174,5 +174,34 @@
       "url": "womens-teams.html",
       "visible": true
     }
+  ],
+  "coaches": [
+    {
+      "id": "c1",
+      "team": "First Team",
+      "name": "Marvin Koeppen",
+      "role": "Head Coach",
+      "image": "headcoach1.jpg",
+      "visible": true,
+      "bio": "UEFA B-Licensed coach focused on strategy, performance and player development."
+    },
+    {
+      "id": "c2",
+      "team": "First Team",
+      "name": "Ciaran",
+      "role": "Assistant Coach",
+      "image": "assistant1.jpg",
+      "visible": true,
+      "bio": "Supports tactical planning, training and individual player development."
+    },
+    {
+      "id": "c3",
+      "team": "Reserves",
+      "name": "Brendan Squibb",
+      "role": "Senior Coach",
+      "image": "headcoach2.jpg",
+      "visible": true,
+      "bio": "Focuses on player development and supporting our young players development from youth into mens football."
+    }
   ]
 }
