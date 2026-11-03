@@ -79,8 +79,10 @@
     .admin-wrap { max-width: 820px; margin: 40px auto 60px; padding: 0 20px; }
     .admin-wrap .section { margin-bottom: 25px; }
 
-    .tabs { display: flex; gap: 10px; margin-bottom: 25px; }
-    .tabs .admin-btn { flex: 1; padding: 14px 10px; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; }
+    .tabs .admin-btn { flex: 1 1 120px; padding: 13px 8px; }
+    #subs { margin-bottom: 18px; }
+    #subs .admin-btn { flex: 0 0 auto; padding: 9px 14px; font-size: 12px; letter-spacing: 0.5px; }
     .admin-btn.inactive {
       background: transparent; color: var(--orange-light);
       border: 1px solid rgba(255,145,77,0.5);
@@ -164,6 +166,23 @@
       .row { grid-template-columns: 1fr; }
       .score-row { grid-template-columns: 1fr auto 1fr; gap: 8px; }
     }
+
+    /* ---------- Website editor (added) ---------- */
+
+    .admin-btn.sm { padding: 7px 11px; font-size: 12px; letter-spacing: 0; }
+    .admin-btn.red { color: #ff9a8a; border-color: rgba(255,90,70,0.55); }
+    .note { margin: 0 0 14px !important; color: var(--text-muted) !important; font-size: 14px !important; line-height: 1.6 !important; }
+    .lrow { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .lrow > div { min-width: 0; }
+    .match-list li.editor { display: block; margin: 10px 0; }
+    .match-list li .match-actions { flex-wrap: wrap; justify-content: flex-end; }
+    .match-list li .match-actions button.admin-btn { padding: 7px 11px; font-size: 12px; letter-spacing: 0; }
+    .thumb { display: block; max-width: 160px; max-height: 110px; margin-bottom: 8px; border-radius: 8px; border: 1px solid rgba(255,145,77,0.3); }
+    .thumb-sm { width: 52px; height: 52px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+    @media (max-width: 600px) {
+      .match-list li { flex-direction: column; align-items: flex-start; }
+      .match-list li .match-actions { justify-content: flex-start; }
+    }
   </style>
 </head>
 
@@ -179,7 +198,7 @@
     <span class="home-section-label">Club Admin</span>
     <h2>Unlock</h2>
     <p>
-      Paste your GitHub access token to update match results and junior teams.
+      Paste your GitHub access token to update the website, match results and junior teams.
       The token is only ever stored on this device, never in the website code,
       so nobody else can use this page.
     </p>
@@ -215,16 +234,17 @@
 
   <div id="appSection" hidden>
 
-    <div class="tabs">
-      <button class="admin-btn" id="tabMatches" type="button">Matches</button>
-      <button class="admin-btn inactive" id="tabTeams" type="button">Junior Teams</button>
-      <button class="admin-btn inactive" id="tabCr1" type="button">CR1</button>
-    </div>
+    <!-- One tab per website page. Sub-tabs appear under it. -->
+    <div class="tabs" id="tabs"></div>
+    <div class="tabs" id="subs"></div>
+
+    <!-- Website editor panel (filled in by the script) -->
+    <section class="section" id="sitePanel" hidden></section>
 
     <!-- =====================================================
-         MATCHES PANEL
+         MATCHES PANEL  (Seniors Page > Match results)
          ===================================================== -->
-    <div id="matchesPanel">
+    <div id="matchesPanel" hidden>
 
       <section class="section">
         <span class="home-section-label">Season</span>
@@ -774,6 +794,8 @@ async function tryUnlock(candidate, remember) {
     await refreshList();
     await refreshTeams();
     await refreshCR1();
+    await loadSite();
+    buildTabs();
     return true;
 
   } catch (err) {
@@ -799,14 +821,10 @@ function lock() {
 }
 
 
-/* ---------- Tabs ---------- */
+/* ---------- Tabs (replaced: see "Website editor" below) ---------- */
 
-function showTab(name) {
-  ["matches", "teams", "cr1"].forEach(function (n) {
-    $(n + "Panel").hidden = (n !== name);
-    $("tab" + n.charAt(0).toUpperCase() + n.slice(1)).className =
-      "admin-btn" + (n === name ? "" : " inactive");
-  });
+function showTab() {
+  if (typeof showPage === "function" && $("tabs").children.length) { showPage(0, 0); }
 }
 
 
@@ -1795,6 +1813,662 @@ async function saveCR1() {
 }
 
 
+/* =========================================================
+   WEBSITE EDITOR  (added)
+   Everything below edits one extra file in the data repo:
+       site-content.json
+   It sits OUTSIDE the season files on purpose, so switching
+   season never touches your home page, shop, sponsors etc.
+   The file is created automatically the first time you save.
+   Photos you upload are stored in the repo's  images/  folder.
+   ========================================================= */
+
+const SITE_FILE = "site-content.json";
+const SITE_BASE = "https://coteese.github.io/ngongotaha-data/";   /* where uploaded photos are served from */
+let DATA = {};   /* contents of site-content.json */
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) { e.className = cls; }
+  if (text != null) { e.textContent = text; }
+  return e;
+}
+
+function slug(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+
+async function loadSite() {
+  try { DATA = (await readJson(SITE_FILE)).data || {}; } catch (e) { DATA = {}; }
+}
+
+/* Saves ONE section of the site file (re-reads first, so nothing else is overwritten). */
+async function saveKey(key, val, msg) {
+  const f = await readJson(SITE_FILE);
+  const d = f.data || {};
+  d[key] = val;
+  await writeJson(SITE_FILE, d, f.sha, msg);
+  DATA[key] = val;
+}
+
+
+/* ---------- Photo upload (resizes first, then stores in images/) ---------- */
+
+function resizeImage(file, max) {
+  return new Promise(function (res, rej) {
+    const im = new Image();
+    im.onload = function () {
+      const s = Math.min(1, max / Math.max(im.width, im.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(im.width * s);
+      c.height = Math.round(im.height * s);
+      const x = c.getContext("2d");
+      const png = file.type === "image/png";
+      if (!png) { x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); }
+      x.drawImage(im, 0, 0, c.width, c.height);
+      c.toBlob(function (b) {
+        if (b) { res({ blob: b, ext: png ? "png" : "jpg" }); } else { rej(new Error("Could not process that image.")); }
+      }, png ? "image/png" : "image/jpeg", 0.86);
+    };
+    im.onerror = function () { rej(new Error("That file isn't a photo I can read. Try a JPG or PNG.")); };
+    im.src = URL.createObjectURL(file);
+  });
+}
+
+function blobToB64(b) {
+  return new Promise(function (res) {
+    const r = new FileReader();
+    r.onload = function () { res(String(r.result).split(",")[1]); };
+    r.readAsDataURL(b);
+  });
+}
+
+async function uploadImage(file, max) {
+  const r = await resizeImage(file, max || 1600);
+  const name = "images/" + Date.now().toString(36) + "-" + (slug(file.name.replace(/\.[^.]+$/, "")).slice(0, 30) || "photo") + "." + r.ext;
+
+  const res = await api(FILE_URL(name), {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: "Upload " + name, content: await blobToB64(r.blob), branch: CONFIG.branch })
+  });
+
+  if (res.status === 401 || res.status === 403) { throw new Error("Your token was rejected. It needs Contents: Read and write."); }
+  if (!res.ok) { throw new Error("GitHub error " + res.status + " while uploading."); }
+  return SITE_BASE + name;
+}
+
+
+/* ---------- Form builder ----------
+   field: { k, label, type: text|number|textarea|select|check|image, req, hint, options, def, rows, max } */
+
+function buildFields(fields, item) {
+  const box = el("div");
+  const getters = {};
+  let busy = 0;
+
+  fields.forEach(function (f) {
+    const w = el("div", "field");
+    const v = item[f.k];
+    let inp;
+
+    if (f.type === "check") {
+      w.className = "check";
+      inp = document.createElement("input");
+      inp.type = "checkbox";
+      inp.checked = v === undefined ? !!f.def : !!v;
+      const l = el("label");
+      l.style.cssText = "cursor:pointer;display:flex;gap:10px;align-items:center";
+      l.appendChild(inp);
+      l.appendChild(document.createTextNode(f.label));
+      w.appendChild(l);
+      getters[f.k] = function () { return inp.checked; };
+      box.appendChild(w);
+      return;
+    }
+
+    w.appendChild(el("label", "", f.label + (f.req ? " *" : "")));
+
+    if (f.type === "textarea") {
+      inp = document.createElement("textarea");
+      inp.value = v || "";
+      if (f.rows) { inp.style.minHeight = (f.rows * 26) + "px"; }
+
+    } else if (f.type === "select") {
+      inp = document.createElement("select");
+      const opts = typeof f.options === "function" ? f.options() : f.options;
+      opts.forEach(function (o) {
+        const op = document.createElement("option");
+        op.value = o.v;
+        op.textContent = o.t;
+        inp.appendChild(op);
+      });
+      if (v && !opts.some(function (o) { return o.v === v; })) {
+        const x = document.createElement("option");
+        x.value = x.textContent = v;
+        inp.appendChild(x);
+      }
+      inp.value = v || (opts[0] && opts[0].v) || "";
+
+    } else {
+      inp = document.createElement("input");
+      inp.type = f.type === "number" ? "number" : "text";
+      if (f.type === "number") { inp.step = "0.01"; inp.min = "0"; }
+      inp.value = v == null ? (f.def == null ? "" : f.def) : v;
+    }
+
+    if (f.type === "image") {
+      const pv = document.createElement("img");
+      pv.className = "thumb";
+      pv.onerror = function () { pv.hidden = true; };
+      function show() { pv.src = inp.value; pv.hidden = !/^https?:/.test(inp.value) && !pv.dataset.local; }
+
+      const file = document.createElement("input");
+      file.type = "file"; file.accept = "image/*"; file.hidden = true;
+
+      const up = el("button", "admin-btn ghost sm", "Upload photo");
+      up.type = "button";
+      up.style.marginBottom = "8px";
+      up.onclick = function () { file.click(); };
+
+      const msg = el("small", "", inp.value ? "Current photo: " + inp.value : "No photo yet.");
+
+      file.onchange = async function () {
+        const fl = file.files[0];
+        if (!fl) { return; }
+        busy++; up.disabled = true; msg.textContent = "Uploading…";
+        try {
+          inp.value = await uploadImage(fl, f.max);
+          pv.src = URL.createObjectURL(fl); pv.dataset.local = "1"; pv.hidden = false;
+          msg.textContent = "Photo uploaded. It can take a minute or two to appear on the live website.";
+        } catch (e) {
+          msg.textContent = "Upload failed: " + e.message;
+        } finally {
+          busy--; up.disabled = false;
+        }
+      };
+
+      inp.oninput = show; show();
+      w.appendChild(pv); w.appendChild(up); w.appendChild(file); w.appendChild(inp); w.appendChild(msg);
+
+    } else {
+      w.appendChild(inp);
+    }
+
+    if (f.hint) { w.appendChild(el("small", "", f.hint)); }
+
+    getters[f.k] = function () {
+      const t = inp.value;
+      if (f.type === "number") { return parseFloat(t) || 0; }
+      return f.type === "textarea" ? t.trim() : t.replace(/\s+/g, " ").trim();
+    };
+    box.appendChild(w);
+  });
+
+  return {
+    box: box,
+    busy: function () { return busy > 0; },
+    values: function () { const o = {}; Object.keys(getters).forEach(function (k) { o[k] = getters[k](); }); return o; },
+    missing: function () {
+      const o = this.values();
+      return fields.filter(function (f) { return f.req && !o[f.k]; })[0];
+    }
+  };
+}
+
+
+/* ---------- List editor: add / edit / remove / move up and down ---------- */
+
+function listEditor(host, cfg) {
+  host.textContent = "";
+  const note = el("p", "note", cfg.note || "");
+  const bar = el("div");
+  const st = el("div", "status");
+  const ul = el("ul", "match-list");
+  let open = null;
+  host.appendChild(note); host.appendChild(bar); host.appendChild(st); host.appendChild(ul);
+
+  function arr() { return Array.isArray(DATA[cfg.key]) ? DATA[cfg.key] : null; }
+
+  async function commit(a, msg) {
+    showStatus(st, "info", "Saving…");
+    try {
+      await saveKey(cfg.key, a, msg);
+      showStatus(st, "ok", "Saved. It will be live on the website within about a minute.");
+    } catch (e) {
+      showStatus(st, "err", e.message);
+      return false;
+    }
+    draw();
+    return true;
+  }
+
+  function editor(i, li) {
+    if (open) { open.remove(); }
+    const a = (arr() || []).slice();
+    const item = i >= 0 ? a[i] : {};
+    const box = el("li", "editor");
+    open = box;
+    box.appendChild(el("h3", "", (i >= 0 ? "Edit " : "Add ") + cfg.label));
+
+    const fl = buildFields(cfg.fields, item);
+    box.appendChild(fl.box);
+
+    const s = el("button", "admin-btn", "Save");
+    const c = el("button", "admin-btn ghost", "Cancel");
+    const es = el("div", "status");
+    s.type = c.type = "button";
+    c.style.marginLeft = "8px";
+    c.onclick = function () { box.remove(); open = null; };
+
+    s.onclick = async function () {
+      if (fl.busy()) { return showStatus(es, "info", "Please wait for the photo to finish uploading."); }
+      const m = fl.missing();
+      if (m) { return showStatus(es, "err", "Please fill in: " + m.label); }
+
+      const n = Object.assign({}, item, fl.values());
+      if (!n.id) { n.id = (cfg.idPrefix || "i") + Date.now().toString(36); }
+      if (cfg.beforeSave) { cfg.beforeSave(n); }
+
+      if (i >= 0) { a[i] = n; } else if (cfg.addFirst) { a.unshift(n); } else { a.push(n); }
+
+      s.disabled = true;
+      showStatus(es, "info", "Saving…");
+      const ok = await commit(a, (i >= 0 ? "Edit " : "Add ") + cfg.label + ": " + cfg.title(n));
+      if (!ok) { s.disabled = false; clearStatus(es); }
+    };
+
+    box.appendChild(s); box.appendChild(c); box.appendChild(es);
+    if (li) { li.after(box); } else { ul.prepend(box); }
+    box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function draw() {
+    ul.textContent = ""; bar.textContent = ""; open = null;
+    let a = arr();
+
+    if (!a && cfg.seed) {
+      note.textContent = "This section isn't connected yet, so your website is still showing its original built-in content. Press the button below to copy what is on the website into the editor first. After that you can change anything.";
+      const sb = el("button", "admin-btn", "Load what's on the website now");
+      sb.type = "button";
+      sb.onclick = function () { commit(cfg.seed(), "Load starting " + cfg.label + " list"); };
+      bar.appendChild(sb);
+      return;
+    }
+    note.textContent = cfg.note || "";
+
+    const add = el("button", "admin-btn", "+ Add " + cfg.label);
+    add.type = "button";
+    add.onclick = function () { editor(-1, null); };
+    bar.appendChild(add);
+
+    a = a || [];
+    if (!a.length) { ul.appendChild(el("li", "", "Nothing here yet.")); }
+
+    a.forEach(function (it, i) {
+      const li = el("li");
+      const row = el("div", "lrow");
+
+      if (/^https?:/.test(it.image || "")) {
+        const im = el("img", "thumb-sm");
+        im.src = it.image;
+        im.onerror = function () { im.remove(); };
+        row.appendChild(im);
+      }
+
+      const info = el("div");
+      info.appendChild(el("div", "", cfg.title(it)));
+      info.appendChild(el("div", "meta", (it.visible === false ? "HIDDEN · " : "") + (cfg.meta ? cfg.meta(it) : "")));
+      row.appendChild(info);
+
+      const acts = el("div", "match-actions");
+      function btn(t, cls, fn, dis) {
+        const b = el("button", "admin-btn " + cls, t);
+        b.type = "button"; b.disabled = !!dis; b.onclick = fn;
+        acts.appendChild(b);
+      }
+      function move(d) {
+        const b = a.slice(), t = b[i];
+        b[i] = b[i + d]; b[i + d] = t;
+        commit(b, "Reorder " + cfg.label + "s");
+      }
+
+      btn("▲", "ghost", function () { move(-1); }, i === 0);
+      btn("▼", "ghost", function () { move(1); }, i === a.length - 1);
+      btn("Edit", "ghost", function () { editor(i, li); });
+      btn("Remove", "ghost red", function () {
+        if (confirm("Remove \"" + cfg.title(it) + "\" from the website?")) {
+          const b = a.slice(); b.splice(i, 1);
+          commit(b, "Remove " + cfg.label + ": " + cfg.title(it));
+        }
+      });
+
+      li.appendChild(row); li.appendChild(acts); ul.appendChild(li);
+    });
+  }
+
+  draw();
+}
+
+
+/* ---------- Single form (one set of fields) ---------- */
+
+function formEditor(host, cfg) {
+  host.textContent = "";
+  if (cfg.note) { host.appendChild(el("p", "note", cfg.note)); }
+
+  const fl = buildFields(cfg.fields, Object.assign({}, cfg.defaults || {}, DATA[cfg.key] || {}));
+  const b = el("button", "admin-btn", "Save changes");
+  const st = el("div", "status");
+  b.type = "button";
+
+  b.onclick = async function () {
+    if (fl.busy()) { return showStatus(st, "info", "Please wait for the photo to finish uploading."); }
+    b.disabled = true;
+    showStatus(st, "info", "Saving…");
+    try {
+      await saveKey(cfg.key, fl.values(), "Edit " + cfg.label);
+      showStatus(st, "ok", "Saved. It will be live on the website within about a minute.");
+    } catch (e) {
+      showStatus(st, "err", e.message);
+    } finally {
+      b.disabled = false;
+    }
+  };
+
+  host.appendChild(fl.box); host.appendChild(b); host.appendChild(st);
+}
+
+
+/* ---------- What the website shows today (used by "Load what's on the website now") ---------- */
+
+const CL = "Junior 4,Junior 6,Junior 8,Junior 10,Junior 12,Junior 14,Junior 16,Adult XS,Adult S,Adult M,Adult L,Adult XL,Adult 2XL,Adult 3XL";
+function P() { return Array.prototype.slice.call(arguments).join("\n\n"); }
+
+const SEED = {
+  navTop: function () {
+    return [["Home", "index.html"], ["About Us", "aboutus.html"], ["Login", "https://ngongotahaafc.friendlymanager.com", 1], ["Registrations", "registrations.html"],
+      ["CR1 Project", "cr1.html"], ["Hire & Facilities", "hire.html"], ["Club Shop", "shop.html"], ["Ngongotahā Teams", "", 0, 1]].map(function (r, i) {
+      return { id: "n" + i, label: r[0], url: r[1], newTab: !!r[2], dropdown: !!r[3], visible: true };
+    });
+  },
+  navDropdown: function () {
+    return [["Senior Teams", "senior-teams.html"], ["Junior Teams", "junior-teams.html"], ["Women's Teams", "womens-teams.html"]].map(function (r, i) {
+      return { id: "d" + i, label: r[0], url: r[1], visible: true };
+    });
+  },
+  sponsors: function () {
+    return [["Bev and Jason Waller - Arizto", "https://www.arizto.co.nz/our-people/profile/bev-and-jason-waller/"], ["McDonald's New Zealand", "https://www.mcdonalds.com/nz/en-nz.html"],
+      ["VIP Plumbing and Gasfittings", "https://vipplumbing.co.nz/"], ["Douglas Automotive", "https://www.douglasautomotive.net/"], ["Friendly Manager", "https://www.friendlymanager.com/"]].map(function (r, i) {
+      return { id: "s" + i, name: r[0], link: r[1], image: "sponsor" + (i + 1) + ".jpg", visible: true };
+    });
+  },
+  news: function () {
+    return [
+      { id: "history", featured: true, image: "drone.jpg", kicker: "60 YEARS OF NGONGOTAHĀ AFC", date: "1966 → 2026", title: "A Club Built on Football, Community and Generations",
+        summary: "Ngongotahā AFC is celebrating its 60th year jubilee in 2026, and what a 60 years it has been.",
+        body: P("Ngongotahā AFC is celebrating its 60th year jubilee in 2026, and what a 60 years it has been.",
+          "Founded in 1966, Ngongotahā Football Club has grown alongside the community it represents. What began as a local football club has developed into one of Rotorua's longstanding football institutions, providing a place for generations of players to learn the game, make friendships and pull on the Ngongotahā colours.",
+          "Over the decades, the club has competed across the regional and national football landscape. Ngongotahā spent many years competing in the Northern League era, including football as high as the second division. The club has also enjoyed memorable cup and championship campaigns, with the 2011 season bringing a Federation Championship title and promotion.",
+          "In 2014, Ngongotahā reached the round of 16 in the Chatham Cup, creating another memorable chapter in the club's history. Two years later came another milestone when the club claimed its first Waikato-Bay of Plenty Federation Premiership title, completing an unbeaten championship campaign.",
+          "But the story of Ngongotahā AFC is about much more than league tables and trophies. It is about the volunteers preparing the grounds, coaches giving their time, families standing on the sideline, juniors discovering football for the first time, and players returning to the club year after year.",
+          "As the club celebrates 60 years in 2026, the focus is both on remembering the people and moments that built Ngongotahā AFC and looking forward to the next generation. From Little Dribblers and junior football through to senior, women's and community football, the next chapter is already being written.") },
+      { id: "walking", image: "walkingfootball.jpg", kicker: "COMMUNITY FOOTBALL", date: "8 MAY", title: "Walking Football Launches in Rotorua",
+        summary: "Ngongotahā AFC has helped launch Walking Football in Rotorua, opening another pathway for people to enjoy the game in a relaxed and welcoming environment.",
+        body: P("Ngongotahā AFC has helped launch Walking Football in Rotorua, opening another pathway for people to enjoy the game in a relaxed and welcoming environment.",
+          "The programme is designed for the over-55 community and offers a slower-paced version of football without running or contact.",
+          "It provides an accessible way to stay active, meet people and continue enjoying the game regardless of previous football experience or current fitness level.",
+          "The programme is being led by Head Coach Marvin Koeppen, with sessions taking place in partnership with Parksyde Community Centre.",
+          "It is another example of how football can provide a place for people at different stages of life to stay connected to the game and to their local community.") },
+      { id: "preseason", image: "mens.jpg", kicker: "SENIOR FOOTBALL", date: "9 JAN", title: "Preseason 2026 Gets Underway",
+        summary: "The First Team and U23s began preparations for the 2026 season with preseason training at Stembridge Road.",
+        body: P("The First Team and U23s began preparations for the 2026 season with preseason training at Stembridge Road.",
+          "With another season ahead and plenty to build towards, the club welcomed new players to join the group and become part of the Ngongotahā senior football pathway.",
+          "The first training session marked the beginning of the work towards the new season, with players and coaches getting back together and preparing for the challenges ahead.",
+          "The session also included a club barbecue, bringing players, coaches and the wider football community together as the new season began.",
+          "With the senior pathway continuing to grow, preseason provides another opportunity for players to put their hands up, become part of the group and help shape the 2026 season.") },
+      { id: "whanau", image: "cr1.jpg", kicker: "COMMUNITY", date: "30 JAN", title: "Football Meets the Community at Fun Whānau Days",
+        summary: "Ngongotahā AFC took football into the community during a series of Fun Whānau Days across Rotorua.",
+        body: P("Ngongotahā AFC took football into the community during a series of Fun Whānau Days across Rotorua.",
+          "The club brought football stations, small goals, cones and plenty of footballs to local parks, giving tamariki and whānau the chance to get involved in a fun and informal setting.",
+          "The events included community sessions at Ngongotahā Domain, Karenga Park in Te Koutu and Linton Park in East Mangakakahi.",
+          "The focus was on making football accessible, welcoming and enjoyable for everyone, with young players able to get involved without the pressure of a formal training environment.",
+          "The days are part of the club's continued commitment to making football accessible throughout the Rotorua community and helping more tamariki discover the game.") },
+      { id: "CR1", image: "cr8.jpg", kicker: "Junior Community football", date: "31 OCT", title: "CR1 IS BACK UNDERWAY",
+        summary: "Ngongotahā AFC has officially entered its 3rd year of CR1 helping the community every week",
+        body: P("Ngongotahā AFC’s Children First (CR1) programme is returning for its third consecutive year, with the new programme kicking off on Saturday, 31 October 2026.",
+          "Built around the belief that every child deserves the opportunity to play football, CR1 continues to break down barriers and make the game accessible to tamariki across Rotorua. Open to children aged 3–13, the programme provides a fun, welcoming environment where young players can develop their skills, build confidence and make new friends.",
+          "Club president Aaron Lawrence says the programme is about empowering young people to play football and have fun, while co-founder and ex-first team coach Trevor Johnston recognises the financial challenges football can place on families.",
+          "CR1 helps remove these barriers by providing a free football programme, food for children on Saturday mornings and a free bus service to help with transport. There are no eligibility criteria, and all children in Rotorua are welcome to get involved.",
+          "Following the success of previous years, the programme continues to build on Ngongotahā AFC’s commitment to making football accessible to everyone. Support from the New Zealand Community Trust, which awarded the club a $21,060 grant, has helped support the programme and its ongoing mission.",
+          "As CR1 enters its third year, the goal remains the same: to give more local tamariki the chance to experience football, enjoy being active and feel part of their community.",
+          "CR1 kicks off on Saturday, 31 October and will continue to run all the way through to Christmas. Every child is welcome!",
+          "Massive thanks to all of our coaches and sponsors for making this happen each year!") }
+    ].map(function (n) { n.visible = true; return n; });
+  },
+  seniorTeams: function () {
+    return [
+      { id: "st1", kicker: "Men's First Team", title: "Our First Team", image: "mens.jpg", visible: true,
+        text: P("Our flagship senior men's side competing in the WaiBOP regional football structure.", "The First Team represents the highest level of men's football at Ngongotahā.") },
+      { id: "st2", kicker: "Senior Football", title: "Our Bay Teams", image: "image1.jpg", visible: true,
+        text: P("Ngongotahā also fields two competitive Bay League sides, giving more players the opportunity to play senior football.", "**Bay 1** provides competitive senior football, while **Bay 4** is our Over 35s and social side.") }
+    ];
+  },
+  coaches: function () {
+    return [
+      { id: "c1", team: "First Team", name: "Marvin Koeppen", role: "Head Coach", image: "headcoach1.jpg", visible: true, bio: "UEFA B-Licensed coach focused on strategy, performance and player development." },
+      { id: "c2", team: "First Team", name: "Ciaran", role: "Assistant Coach", image: "assistant1.jpg", visible: true, bio: "Supports tactical planning, training and individual player development." },
+      { id: "c3", team: "Reserves", name: "Brendan Squibb", role: "Senior Coach", image: "headcoach2.jpg", visible: true, bio: "Focuses on player development and supporting our young players development from youth into mens football." }
+    ];
+  },
+  hireOptions: function () {
+    return [
+      { id: "h1", kicker: "KIDS & FAMILY EVENTS", title: "Bouncy Castle Hire", image: "bounce.jpg", text: "Choose from our three bouncy castles and hire one, two or all three for your event." },
+      { id: "h2", kicker: "EVENTS & FUNCTIONS", title: "Club Room Hire", image: "background.jpg", text: "Hire the Ngongotahā Football Club rooms for meetings, celebrations, functions and community events." }
+    ];
+  },
+  hireCastles: function () {
+    return [1, 2, 3].map(function (n) { return { id: "bc" + n, name: "Bouncy Castle " + n, text: "Bouncy castle hire option.", image: "castle" + n + ".jpg", visible: true }; });
+  },
+  hireInfo: function () {
+    return [
+      { id: "i1", icon: "🎈", title: "Great For Parties", text: "Bouncy castles provide an easy way to add some fun to birthdays and family events." },
+      { id: "i2", icon: "🏠", title: "Club Facilities", text: "Our club rooms provide a practical space for functions, meetings and community events." },
+      { id: "i3", icon: "⚽", title: "Support The Club", text: "Your hire helps support the continued development of Ngongotahā Football Club." }
+    ];
+  },
+  shopCategories: function () {
+    return [{ id: "matchwear", label: "Matchwear" }, { id: "accessories", label: "Accessories" }, { id: "supporter-gear", label: "Supporter Gear" }];
+  },
+  shopProducts: function () {
+    return [
+      ["shirt", "Club Playing Shirt", "matchwear", 55, CL, "Show your club pride in the official Ngongotāhā AFC playing shirt.", "Club Essential"],
+      ["shorts", "Club Playing Shorts", "matchwear", 35, CL, "Complete your matchday kit with official club playing shorts.", ""],
+      ["hoodie", "Club Hoodie", "supporter-gear", 65, CL, "Stay warm on the sideline and represent Ngongotāhā AFC wherever you go.", "Club Favourite"],
+      ["socks", "Club Football Socks", "accessories", 18, "Junior,Youth,Adult", "Matchday socks to complete your kit and support you throughout the season.", "Matchday Essential"],
+      ["training-top", "Training Top", "matchwear", 40, CL, "A club training essential for practice, warm-ups and football sessions.", ""],
+      ["jacket", "Club Training Jacket", "supporter-gear", 80, CL, "An extra layer for cold training nights, matchdays and travelling with the team.", ""],
+      ["beanie", "Club Beanie", "supporter-gear", 25, "One Size", "Keep warm during winter football and support your club in style.", ""],
+      ["scarf", "Supporter Scarf", "supporter-gear", 30, "One Size", "Bring the orange army spirit to the sideline with club supporter gear.", ""],
+      ["cap", "Club Cap", "supporter-gear", 28, "One Size", "A simple way to represent Ngongotāhā AFC on matchday and beyond.", ""]
+    ].map(function (r) {
+      return { id: r[0], name: r[1], category: r[2], price: r[3], sizes: r[4], image: r[0] + ".jpg", description: r[5], badge: r[6], visible: true };
+    });
+  }
+};
+
+
+/* ---------- Pages and sections (this is the tab layout) ---------- */
+
+const VIS = { k: "visible", type: "check", label: "Show on the website", def: true };
+function catOptions() {
+  return (DATA.shopCategories || SEED.shopCategories()).map(function (c) { return { v: c.id, t: c.label }; });
+}
+
+const PAGES = [
+  { label: "Home Page", sections: [
+    { name: "Latest from the club", build: function (h) { listEditor(h, {
+      key: "news", label: "article", seed: SEED.news, idPrefix: "news", addFirst: true,
+      note: "Each article shows as a card on the home page and opens as a full story when tapped. Newest first works best: use ▲ ▼ to order them.",
+      beforeSave: function (n) { n.id = n.id.replace(/[^A-Za-z0-9_-]/g, ""); },
+      title: function (i) { return i.title; }, meta: function (i) { return (i.date || "") + " · " + (i.kicker || ""); },
+      fields: [
+        { k: "title", label: "Heading", req: true },
+        { k: "image", type: "image", label: "Cover photo" },
+        { k: "date", label: "Date label", hint: "Shown on the photo, e.g. 8 MAY" },
+        { k: "kicker", label: "Small label above the heading", hint: "e.g. COMMUNITY FOOTBALL" },
+        { k: "summary", type: "textarea", label: "Short summary (shown on the card)", rows: 3 },
+        { k: "body", type: "textarea", label: "Full story", rows: 10, hint: "Leave a blank line between paragraphs. Put **double asterisks** around words to make them bold." },
+        { k: "featured", type: "check", label: "Show as a wide featured card" },
+        VIS] }); } },
+    { name: "Sponsors", build: function (h) { listEditor(h, {
+      key: "sponsors", label: "sponsor", seed: SEED.sponsors, idPrefix: "s",
+      note: "Each sponsor is an image. Tapping it opens the link you enter.",
+      title: function (i) { return i.name; }, meta: function (i) { return i.link || "No link"; },
+      fields: [{ k: "name", label: "Sponsor name", req: true }, { k: "image", type: "image", label: "Sponsor image", max: 900 },
+        { k: "link", label: "Link when pressed", hint: "Full address, e.g. https://example.co.nz" }, VIS] }); } }
+  ] },
+
+  { label: "Top Bar", sections: [
+    { name: "Top bar links", build: function (h) { listEditor(h, {
+      key: "navTop", label: "link", seed: SEED.navTop, idPrefix: "n",
+      note: "The links across the top of every page, shown two to a column in this order. Use ▲ ▼ to move them, or Edit and untick “Show on the website” to hide one without deleting it.",
+      title: function (i) { return i.label; },
+      meta: function (i) { return i.dropdown ? "Dropdown menu ▾ (its links are under “Dropdown menu links”)" : i.url + (i.newTab ? " · opens in new tab" : ""); },
+      fields: [
+        { k: "label", label: "Wording", req: true },
+        { k: "url", label: "Page address", hint: "A page like senior-teams.html, or a full web address starting with https://. Not needed for the dropdown button." },
+        { k: "newTab", type: "check", label: "Open in a new tab" },
+        { k: "dropdown", type: "check", label: "This is the dropdown menu button (opens the links from “Dropdown menu links”)" },
+        VIS] }); } },
+    { name: "Dropdown menu links", build: function (h) { listEditor(h, {
+      key: "navDropdown", label: "dropdown link", seed: SEED.navDropdown, idPrefix: "d",
+      note: "The links inside the Teams dropdown. Remove or hide “Women's Teams” here, for example.",
+      title: function (i) { return i.label; }, meta: function (i) { return i.url; },
+      fields: [{ k: "label", label: "Wording", req: true }, { k: "url", label: "Page address", req: true }, VIS] }); } }
+  ] },
+
+  { label: "Seniors Page", sections: [
+    { name: "Coaching staff", build: function (h) { listEditor(h, {
+      key: "coaches", label: "coach", seed: SEED.coaches, idPrefix: "c",
+      note: "The coaches shown on the Seniors page. Remove or hide someone if they pull out.",
+      title: function (i) { return i.name + " — " + i.role; }, meta: function (i) { return i.team; },
+      fields: [{ k: "name", label: "Name", req: true }, { k: "role", label: "Role", hint: "e.g. Head Coach" }, { k: "team", label: "Team", hint: "e.g. First Team" },
+        { k: "image", type: "image", label: "Photo", max: 1000 }, { k: "bio", type: "textarea", label: "Short description", rows: 3 }, VIS] }); } },
+    { name: "Senior team cards", build: function (h) { listEditor(h, {
+      key: "seniorTeams", label: "team card", seed: SEED.seniorTeams, idPrefix: "st",
+      note: "The articles under “Our Senior Teams” (First Team, Bay Teams, etc).",
+      title: function (i) { return i.title; }, meta: function (i) { return i.kicker; },
+      fields: [{ k: "title", label: "Heading", req: true }, { k: "kicker", label: "Small label" }, { k: "image", type: "image", label: "Photo" },
+        { k: "text", type: "textarea", label: "Text", rows: 6, hint: "Blank line = new paragraph. **bold** supported." }, VIS] }); } },
+    { name: "Match results & scorers", panel: "matchesPanel" }
+  ] },
+
+  { label: "Juniors Page", sections: [
+    { name: "Junior teams", panel: "teamsPanel" }
+  ] },
+
+  { label: "Hire Page", sections: [
+    { name: "Page heading", build: function (h) { formEditor(h, {
+      key: "hire", label: "hire page text",
+      note: "The headline text at the top of the Hire page and the Club Rooms description.",
+      defaults: { tagline: "Celebrate. Play. Bring People Together.",
+        intro: "Looking for a space for your next birthday, family event, community gathering or celebration? Ngongotahā Football Club has facilities available for hire, including our bouncy castles and club rooms.",
+        roomsTitle: "Ngongotahā Club Rooms",
+        roomsText: P("Our club rooms are available for functions, celebrations, meetings and community events.", "Tell us what you are planning in the booking details below and we can discuss your requirements."),
+        roomsImage: "background.jpg" },
+      fields: [{ k: "tagline", label: "Tagline" }, { k: "intro", type: "textarea", label: "Intro paragraph", rows: 4 },
+        { k: "roomsTitle", label: "Club rooms heading" }, { k: "roomsText", type: "textarea", label: "Club rooms description", rows: 5 },
+        { k: "roomsImage", type: "image", label: "Club rooms photo" }] }); } },
+    { name: "Hire options", build: function (h) { listEditor(h, {
+      key: "hireOptions", label: "hire option", seed: SEED.hireOptions, idPrefix: "h",
+      note: "The big picture cards under “Choose your hire”.",
+      title: function (i) { return i.title; }, meta: function (i) { return i.kicker; },
+      fields: [{ k: "title", label: "Heading", req: true }, { k: "kicker", label: "Small label" }, { k: "image", type: "image", label: "Photo" },
+        { k: "text", type: "textarea", label: "Text", rows: 3 }] }); } },
+    { name: "Bouncy castles", build: function (h) { listEditor(h, {
+      key: "hireCastles", label: "castle", seed: SEED.hireCastles, idPrefix: "bc",
+      note: "The castles people can pick in the booking form. Add, rename or remove castles here.",
+      title: function (i) { return i.name; }, meta: function (i) { return i.text; },
+      fields: [{ k: "name", label: "Name", req: true }, { k: "image", type: "image", label: "Photo" }, { k: "text", label: "Short description" },
+        { k: "visible", type: "check", label: "Available to book", def: true }] }); } },
+    { name: "Info cards", build: function (h) { listEditor(h, {
+      key: "hireInfo", label: "info card", seed: SEED.hireInfo, idPrefix: "i",
+      note: "The three small cards at the bottom of the Hire page.",
+      title: function (i) { return (i.icon || "") + " " + i.title; }, meta: function (i) { return i.text; },
+      fields: [{ k: "icon", label: "Icon (an emoji)" }, { k: "title", label: "Heading", req: true }, { k: "text", type: "textarea", label: "Text", rows: 3 }] }); } }
+  ] },
+
+  { label: "Club Shop", sections: [
+    { name: "Products", build: function (h) { listEditor(h, {
+      key: "shopProducts", label: "product", seed: SEED.shopProducts, idPrefix: "p",
+      note: "Everything in the shop. Change prices, photos or sizes, add new items, or hide / remove old ones. (No payments are taken: this is the display shop.)",
+      title: function (i) { return i.name + " — $" + Number(i.price || 0).toFixed(2); },
+      meta: function (i) {
+        const c = catOptions().filter(function (o) { return o.v === i.category; })[0];
+        return (c ? c.t : "No category") + " · " + (i.sizes || "One Size").split(",").length + " size option(s)";
+      },
+      fields: [
+        { k: "name", label: "Product name", req: true },
+        { k: "price", type: "number", label: "Price (NZD)", def: 0 },
+        { k: "category", type: "select", label: "Category", options: catOptions },
+        { k: "image", type: "image", label: "Photo", max: 1000 },
+        { k: "description", type: "textarea", label: "Description", rows: 3 },
+        { k: "sizes", label: "Sizes", def: "One Size", hint: "Separate sizes with commas, e.g. Small, Medium, Large. One size only? Just write One Size." },
+        { k: "badge", label: "Badge (optional)", hint: "A small tag on the photo, e.g. New or Club Favourite" },
+        { k: "visible", type: "check", label: "Show in the shop", def: true }] }); } },
+    { name: "Categories", build: function (h) { listEditor(h, {
+      key: "shopCategories", label: "category", seed: SEED.shopCategories, idPrefix: "cat",
+      note: "The filter buttons at the top of the shop. Only categories that contain products are shown.",
+      beforeSave: function (n) { if (!n.id || /^cat/.test(n.id)) { n.id = slug(n.label) || n.id; } },
+      title: function (i) { return i.label; }, meta: function () { return ""; },
+      fields: [{ k: "label", label: "Category name", req: true }] }); } }
+  ] },
+
+  { label: "CR1 Page", sections: [
+    { name: "Session dates", panel: "cr1Panel" }
+  ] }
+];
+
+const OLD_PANELS = ["matchesPanel", "teamsPanel", "cr1Panel"];
+
+function showPage(i, s) {
+  const pg = PAGES[i];
+  const subIndex = s || 0;
+  const sec = pg.sections[subIndex];
+
+  Array.prototype.forEach.call($("tabs").children, function (b, n) {
+    b.className = "admin-btn" + (n === i ? "" : " inactive");
+  });
+
+  const subs = $("subs");
+  subs.textContent = "";
+  subs.hidden = pg.sections.length < 2;
+  pg.sections.forEach(function (x, n) {
+    const b = el("button", "admin-btn" + (n === subIndex ? "" : " inactive"), x.name);
+    b.type = "button";
+    b.onclick = function () { showPage(i, n); };
+    subs.appendChild(b);
+  });
+
+  OLD_PANELS.forEach(function (id) { $(id).hidden = id !== sec.panel; });
+
+  const sp = $("sitePanel");
+  sp.hidden = !!sec.panel;
+  if (!sec.panel) { sp.textContent = ""; sec.build(sp); }
+}
+
+function buildTabs() {
+  const t = $("tabs");
+  t.textContent = "";
+  PAGES.forEach(function (p, i) {
+    const b = el("button", "admin-btn", p.label);
+    b.type = "button";
+    b.onclick = function () { showPage(i, 0); };
+    t.appendChild(b);
+  });
+  showPage(0, 0);
+}
+
+
 /* ---------- Start ---------- */
 
 $("mDate").value = todayLocal();
@@ -1823,9 +2497,6 @@ $("playerRemoveBtn").addEventListener("click", removePlayer);
 $("seasonBtn").addEventListener("click", switchSeason);
 $("clearSeasonBtn").addEventListener("click", clearSeason);
 
-$("tabMatches").addEventListener("click", function () { showTab("matches"); });
-$("tabTeams").addEventListener("click", function () { showTab("teams"); });
-$("tabCr1").addEventListener("click", function () { showTab("cr1"); });
 $("teamSaveBtn").addEventListener("click", saveTeam);
 $("teamCancelBtn").addEventListener("click", resetTeamForm);
 $("seedBtn").addEventListener("click", seedTeams);
