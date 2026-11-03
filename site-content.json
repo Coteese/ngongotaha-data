@@ -203,5 +203,23 @@
       "visible": true,
       "bio": "Focuses on player development and supporting our young players development from youth into mens football."
     }
+  ],
+  "seniorTeams": [
+    {
+      "id": "st1",
+      "kicker": "Men's First Team",
+      "title": "Our First Team",
+      "image": "mens.jpg",
+      "visible": true,
+      "text": "Our flagship senior men's side competing in the WaiBOP regional football structure.\n\nThe First Team represents the highest level of men's football at Ngongotahā."
+    },
+    {
+      "id": "st2",
+      "kicker": "Senior Football",
+      "title": "Our Bay Teams",
+      "image": "image1.jpg",
+      "visible": true,
+      "text": "Ngongotahā also fields two competitive Bay League sides, giving more players the opportunity to play senior football.\n\n**Bay 1** provides competitive senior football, while **Bay 4** is our Over 35s and social side."
+    }
   ]
 }
