@@ -64,5 +64,58 @@
       "dropdown": true,
       "visible": true
     }
+  ],
+  "news": [
+    {
+      "id": "history",
+      "featured": true,
+      "image": "drone.jpg",
+      "kicker": "60 YEARS OF NGONGOTAHĀ AFC",
+      "date": "1966 → 2026",
+      "title": "A Club Built on Football, Community and Generations",
+      "summary": "Ngongotahā AFC is celebrating its 60th year jubilee in 2026, and what a 60 years it has been.",
+      "body": "Ngongotahā AFC is celebrating its 60th year jubilee in 2026, and what a 60 years it has been.\n\nFounded in 1966, Ngongotahā Football Club has grown alongside the community it represents. What began as a local football club has developed into one of Rotorua's longstanding football institutions, providing a place for generations of players to learn the game, make friendships and pull on the Ngongotahā colours.\n\nOver the decades, the club has competed across the regional and national football landscape. Ngongotahā spent many years competing in the Northern League era, including football as high as the second division. The club has also enjoyed memorable cup and championship campaigns, with the 2011 season bringing a Federation Championship title and promotion.\n\nIn 2014, Ngongotahā reached the round of 16 in the Chatham Cup, creating another memorable chapter in the club's history. Two years later came another milestone when the club claimed its first Waikato-Bay of Plenty Federation Premiership title, completing an unbeaten championship campaign.\n\nBut the story of Ngongotahā AFC is about much more than league tables and trophies. It is about the volunteers preparing the grounds, coaches giving their time, families standing on the sideline, juniors discovering football for the first time, and players returning to the club year after year.\n\nAs the club celebrates 60 years in 2026, the focus is both on remembering the people and moments that built Ngongotahā AFC and looking forward to the next generation. From Little Dribblers and junior football through to senior, women's and community football, the next chapter is already being written.",
+      "visible": true
+    },
+    {
+      "id": "walking",
+      "image": "walkingfootball.jpg",
+      "kicker": "COMMUNITY FOOTBALL",
+      "date": "8 MAY",
+      "title": "Walking Football Launches in Rotorua",
+      "summary": "Ngongotahā AFC has helped launch Walking Football in Rotorua, opening another pathway for people to enjoy the game in a relaxed and welcoming environment.",
+      "body": "Ngongotahā AFC has helped launch Walking Football in Rotorua, opening another pathway for people to enjoy the game in a relaxed and welcoming environment.\n\nThe programme is designed for the over-55 community and offers a slower-paced version of football without running or contact.\n\nIt provides an accessible way to stay active, meet people and continue enjoying the game regardless of previous football experience or current fitness level.\n\nThe programme is being led by Head Coach Marvin Koeppen, with sessions taking place in partnership with Parksyde Community Centre.\n\nIt is another example of how football can provide a place for people at different stages of life to stay connected to the game and to their local community.",
+      "visible": true
+    },
+    {
+      "id": "preseason",
+      "image": "mens.jpg",
+      "kicker": "SENIOR FOOTBALL",
+      "date": "9 JAN",
+      "title": "Preseason 2026 Gets Underway",
+      "summary": "The First Team and U23s began preparations for the 2026 season with preseason training at Stembridge Road.",
+      "body": "The First Team and U23s began preparations for the 2026 season with preseason training at Stembridge Road.\n\nWith another season ahead and plenty to build towards, the club welcomed new players to join the group and become part of the Ngongotahā senior football pathway.\n\nThe first training session marked the beginning of the work towards the new season, with players and coaches getting back together and preparing for the challenges ahead.\n\nThe session also included a club barbecue, bringing players, coaches and the wider football community together as the new season began.\n\nWith the senior pathway continuing to grow, preseason provides another opportunity for players to put their hands up, become part of the group and help shape the 2026 season.",
+      "visible": true
+    },
+    {
+      "id": "whanau",
+      "image": "cr1.jpg",
+      "kicker": "COMMUNITY",
+      "date": "30 JAN",
+      "title": "Football Meets the Community at Fun Whānau Days",
+      "summary": "Ngongotahā AFC took football into the community during a series of Fun Whānau Days across Rotorua.",
+      "body": "Ngongotahā AFC took football into the community during a series of Fun Whānau Days across Rotorua.\n\nThe club brought football stations, small goals, cones and plenty of footballs to local parks, giving tamariki and whānau the chance to get involved in a fun and informal setting.\n\nThe events included community sessions at Ngongotahā Domain, Karenga Park in Te Koutu and Linton Park in East Mangakakahi.\n\nThe focus was on making football accessible, welcoming and enjoyable for everyone, with young players able to get involved without the pressure of a formal training environment.\n\nThe days are part of the club's continued commitment to making football accessible throughout the Rotorua community and helping more tamariki discover the game.",
+      "visible": true
+    },
+    {
+      "id": "CR1",
+      "image": "cr8.jpg",
+      "kicker": "Junior Community football",
+      "date": "31 OCT",
+      "title": "CR1 IS BACK UNDERWAY",
+      "summary": "Ngongotahā AFC has officially entered its 3rd year of CR1 helping the community every week",
+      "body": "Ngongotahā AFC’s Children First (CR1) programme is returning for its third consecutive year, with the new programme kicking off on Saturday, 31 October 2026.\n\nBuilt around the belief that every child deserves the opportunity to play football, CR1 continues to break down barriers and make the game accessible to tamariki across Rotorua. Open to children aged 3–13, the programme provides a fun, welcoming environment where young players can develop their skills, build confidence and make new friends.\n\nClub president Aaron Lawrence says the programme is about empowering young people to play football and have fun, while co-founder and ex-first team coach Trevor Johnston recognises the financial challenges football can place on families.\n\nCR1 helps remove these barriers by providing a free football programme, food for children on Saturday mornings and a free bus service to help with transport. There are no eligibility criteria, and all children in Rotorua are welcome to get involved.\n\nFollowing the success of previous years, the programme continues to build on Ngongotahā AFC’s commitment to making football accessible to everyone. Support from the New Zealand Community Trust, which awarded the club a $21,060 grant, has helped support the programme and its ongoing mission.\n\nAs CR1 enters its third year, the goal remains the same: to give more local tamariki the chance to experience football, enjoy being active and feel part of their community.\n\nCR1 kicks off on Saturday, 31 October and will continue to run all the way through to Christmas. Every child is welcome!\n\nMassive thanks to all of our coaches and sponsors for making this happen each year!",
+      "visible": true
+    }
   ]
 }
