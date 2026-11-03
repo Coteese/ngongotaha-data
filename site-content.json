@@ -221,5 +221,21 @@
       "visible": true,
       "text": "Ngongotahā also fields two competitive Bay League sides, giving more players the opportunity to play senior football.\n\n**Bay 1** provides competitive senior football, while **Bay 4** is our Over 35s and social side."
     }
+  ],
+  "hireOptions": [
+    {
+      "id": "h1",
+      "kicker": "KIDS & FAMILY EVENTS",
+      "title": "Bouncy Castle Hire",
+      "image": "bounce.jpg",
+      "text": "Choose from our three bouncy castles and hire one, two or all three for your event."
+    },
+    {
+      "id": "h2",
+      "kicker": "EVENTS & FUNCTIONS",
+      "title": "Club Room Hire",
+      "image": "background.jpg",
+      "text": "Hire the Ngongotahā Football Club rooms for meetings, celebrations, functions and community events."
+    }
   ]
 }
