@@ -280,5 +280,106 @@
       "title": "Support The Club",
       "text": "Your hire helps support the continued development of Ngongotahā Football Club."
     }
+  ],
+  "shopProducts": [
+    {
+      "id": "shirt",
+      "name": "Club Playing Shirt",
+      "category": "matchwear",
+      "price": 55,
+      "sizes": "Junior 4,Junior 6,Junior 8,Junior 10,Junior 12,Junior 14,Junior 16,Adult XS,Adult S,Adult M,Adult L,Adult XL,Adult 2XL,Adult 3XL",
+      "image": "shirt.jpg",
+      "description": "Show your club pride in the official Ngongotāhā AFC playing shirt.",
+      "badge": "Club Essential",
+      "visible": true
+    },
+    {
+      "id": "shorts",
+      "name": "Club Playing Shorts",
+      "category": "matchwear",
+      "price": 35,
+      "sizes": "Junior 4,Junior 6,Junior 8,Junior 10,Junior 12,Junior 14,Junior 16,Adult XS,Adult S,Adult M,Adult L,Adult XL,Adult 2XL,Adult 3XL",
+      "image": "shorts.jpg",
+      "description": "Complete your matchday kit with official club playing shorts.",
+      "badge": "",
+      "visible": true
+    },
+    {
+      "id": "hoodie",
+      "name": "Club Hoodie",
+      "category": "supporter-gear",
+      "price": 65,
+      "sizes": "Junior 4,Junior 6,Junior 8,Junior 10,Junior 12,Junior 14,Junior 16,Adult XS,Adult S,Adult M,Adult L,Adult XL,Adult 2XL,Adult 3XL",
+      "image": "hoodie.jpg",
+      "description": "Stay warm on the sideline and represent Ngongotāhā AFC wherever you go.",
+      "badge": "Club Favourite",
+      "visible": true
+    },
+    {
+      "id": "socks",
+      "name": "Club Football Socks",
+      "category": "accessories",
+      "price": 18,
+      "sizes": "Junior,Youth,Adult",
+      "image": "socks.jpg",
+      "description": "Matchday socks to complete your kit and support you throughout the season.",
+      "badge": "Matchday Essential",
+      "visible": true
+    },
+    {
+      "id": "training-top",
+      "name": "Training Top",
+      "category": "matchwear",
+      "price": 40,
+      "sizes": "Junior 4,Junior 6,Junior 8,Junior 10,Junior 12,Junior 14,Junior 16,Adult XS,Adult S,Adult M,Adult L,Adult XL,Adult 2XL,Adult 3XL",
+      "image": "training-top.jpg",
+      "description": "A club training essential for practice, warm-ups and football sessions.",
+      "badge": "",
+      "visible": true
+    },
+    {
+      "id": "jacket",
+      "name": "Club Training Jacket",
+      "category": "supporter-gear",
+      "price": 80,
+      "sizes": "Junior 4,Junior 6,Junior 8,Junior 10,Junior 12,Junior 14,Junior 16,Adult XS,Adult S,Adult M,Adult L,Adult XL,Adult 2XL,Adult 3XL",
+      "image": "jacket.jpg",
+      "description": "An extra layer for cold training nights, matchdays and travelling with the team.",
+      "badge": "",
+      "visible": true
+    },
+    {
+      "id": "beanie",
+      "name": "Club Beanie",
+      "category": "supporter-gear",
+      "price": 25,
+      "sizes": "One Size",
+      "image": "beanie.jpg",
+      "description": "Keep warm during winter football and support your club in style.",
+      "badge": "",
+      "visible": true
+    },
+    {
+      "id": "scarf",
+      "name": "Supporter Scarf",
+      "category": "supporter-gear",
+      "price": 30,
+      "sizes": "One Size",
+      "image": "scarf.jpg",
+      "description": "Bring the orange army spirit to the sideline with club supporter gear.",
+      "badge": "",
+      "visible": true
+    },
+    {
+      "id": "cap",
+      "name": "Club Cap",
+      "category": "supporter-gear",
+      "price": 28,
+      "sizes": "One Size",
+      "image": "cap.jpg",
+      "description": "A simple way to represent Ngongotāhā AFC on matchday and beyond.",
+      "badge": "",
+      "visible": true
+    }
   ]
 }
