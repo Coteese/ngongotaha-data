@@ -33,19 +33,19 @@
       "visible": true
     },
     {
-      "id": "n4",
-      "label": "CR1 Project",
-      "url": "cr1.html",
-      "newTab": false,
-      "dropdown": false,
-      "visible": true
-    },
-    {
       "id": "n7",
       "label": "Ngongotahā Teams",
       "url": "",
       "newTab": false,
       "dropdown": true,
+      "visible": true
+    },
+    {
+      "id": "n4",
+      "label": "CR1 Project",
+      "url": "cr1.html",
+      "newTab": false,
+      "dropdown": false,
       "visible": true
     },
     {
