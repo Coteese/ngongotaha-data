@@ -17,19 +17,19 @@
       "visible": true
     },
     {
-      "id": "n2",
-      "label": "Login",
-      "url": "https://ngongotahaafc.friendlymanager.com",
-      "newTab": true,
-      "dropdown": false,
-      "visible": true
-    },
-    {
       "id": "n7",
       "label": "Ngongotahā Teams",
       "url": "",
       "newTab": false,
       "dropdown": true,
+      "visible": true
+    },
+    {
+      "id": "n2",
+      "label": "Login",
+      "url": "https://ngongotahaafc.friendlymanager.com",
+      "newTab": true,
+      "dropdown": false,
       "visible": true
     },
     {
