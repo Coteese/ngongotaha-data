@@ -25,19 +25,19 @@
       "visible": true
     },
     {
-      "id": "n3",
-      "label": "Registrations",
-      "url": "registrations.html",
-      "newTab": false,
-      "dropdown": false,
-      "visible": true
-    },
-    {
       "id": "n7",
       "label": "Ngongotahā Teams",
       "url": "",
       "newTab": false,
       "dropdown": true,
+      "visible": true
+    },
+    {
+      "id": "n3",
+      "label": "Registrations",
+      "url": "registrations.html",
+      "newTab": false,
+      "dropdown": false,
       "visible": true
     },
     {
