@@ -41,19 +41,19 @@
       "visible": true
     },
     {
-      "id": "n5",
-      "label": "Hire & Facilitie",
-      "url": "hire.html",
-      "newTab": false,
-      "dropdown": false,
-      "visible": true
-    },
-    {
       "id": "n7",
       "label": "Ngongotahā Teams",
       "url": "",
       "newTab": false,
       "dropdown": true,
+      "visible": true
+    },
+    {
+      "id": "n5",
+      "label": "Hire & Facilitie",
+      "url": "hire.html",
+      "newTab": false,
+      "dropdown": false,
       "visible": true
     },
     {
