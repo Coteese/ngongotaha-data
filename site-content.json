@@ -9,19 +9,19 @@
       "visible": true
     },
     {
-      "id": "n1",
-      "label": "About Us",
-      "url": "aboutus.html",
-      "newTab": false,
-      "dropdown": false,
-      "visible": true
-    },
-    {
       "id": "n7",
       "label": "Ngongotahā Teams",
       "url": "",
       "newTab": false,
       "dropdown": true,
+      "visible": true
+    },
+    {
+      "id": "n1",
+      "label": "About Us",
+      "url": "aboutus.html",
+      "newTab": false,
+      "dropdown": false,
       "visible": true
     },
     {
